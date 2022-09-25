@@ -1,5 +1,6 @@
 ﻿#define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
+#include <fstream>
 #include <string>
 using namespace std;
 
@@ -82,16 +83,28 @@ void edit_station() {
 
 }
 
-void save() {
-
+void save(pipe* pipes, station* stations, int p_size, int s_size) {
+    ofstream fout;
+    fout.open("data.txt",'w');
+    fout << "***Pipes***\n";
+    for (int i = 0; i < p_size; i++) {
+        fout << "N " << i
+            << " Length: " << pipes[i].length
+            << " Diameter: " << pipes[i].diameter
+            << " Condition: " << pipes[i].condition << endl;
+    }
+    fout.close();
 }
 
 void download() {
+    ifstream fin;
+    fin.open("data.txt", 'r');
+
 
 }
 
 void menu() {
-    system("cls"); // очистка экрана
+    system("cls"); 
     cout << "Welcome! This is the menu.Select an action:\n";
     cout << "1. Add pipe\n2. Add compressor station\n3. View all objects\n4. Edit pipe\n5. Edit compressor station\n6. Save\n7. Download\n0. Exit\n->";
 }
@@ -102,7 +115,7 @@ int read_variant(int count) {
     getline(cin, s); 
     // проверка
     while (sscanf_s(s.c_str(), "%d", &variant) != 1 || variant < 1 || variant > count) {
-        cout << "Invalid value. Try again:"; // вывод сообщения об ошибке
+        cout << "Invalid value. Try again:"; 
         getline(cin, s); 
     }
 
@@ -116,12 +129,12 @@ int main()
     int p_capacity = 1; // ёмкость массива товаров
     int s_size = 0; 
     int s_capacity = 1; 
-    pipe* pipes = (pipe*)malloc(p_capacity * sizeof(pipe)); // выделяем память под массив товаров
+    pipe* pipes = (pipe*)malloc(p_capacity * sizeof(pipe)); //память под массив товаров
     station* stations = (station*)malloc(s_capacity * sizeof(station));
     do {
-        menu(); // выводим меню на экран
+        menu();
 
-        variant = read_variant(8); // получаем номер выбранного пункта меню
+        variant = read_variant(8); 
 
         switch (variant) {
             case 1:
@@ -140,7 +153,7 @@ int main()
                 edit_station();
                 break;
             case 6:
-                save();
+                save(pipes, stations, p_size, s_size);
                 break;
             case 7:
                 download();
