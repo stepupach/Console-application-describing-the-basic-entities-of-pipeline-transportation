@@ -44,64 +44,47 @@ int check_variant(int min, int max) {
     return variant;
 }
 
-void add_pipe(pipe **pipes, int* p_size, int* p_capacity) {
+void add_pipe(pipe &pipe_one, int &amount_pipe) {
     system("cls");
-    cout << "Length: ";
-    scanf("%d", &(*pipes)[*p_size].length); //http://www.c-cpp.ru/content/scanf
-    cout <<"Diameter: ";
-    scanf("%d", &(*pipes)[*p_size].diameter);
-    cout << "Condition 1 - Under repair\n          0 - OK\n->";
-    scanf("%s", &(*pipes)[*p_size].condition);
-
-    (*p_size)++;
-
-    if (*p_size >= *p_capacity) {
-        *p_capacity *= 2;
-
-        *pipes = (pipe*)realloc(*pipes, *p_capacity * sizeof(pipe));
-    }
+    cout << "Create a new pipe! Fill in the gaps\n Length: ";
+    //scanf("%d", &pipe_one.length); //http://www.c-cpp.ru/content/scanf
+    cin >> pipe_one.length;
+    cout <<" Diameter: ";
+    cin >> pipe_one.diameter;
+    cout << " Condition 0 - Under repair\n          1 - OK\n->";
+    cin >> pipe_one.condition;
+    amount_pipe++;
 }
 
-void add_station(station **stations, int* s_size, int* s_capacity) {
-    //system("cls");
-    cout << "Name station: ";
-    scanf("%s", &(*stations)[*s_size].name);
-    cout << "Number of workshops: ";
-    scanf("%d", &(*stations)[*s_size].all_workshops);
-    cout << "Number of active workshops: ";
-    scanf("%d", &(*stations)[*s_size].active_workshops);
-    cout << "Performance: ";
-    scanf("%lf", &(*stations)[*s_size].performance);
-
-    (*s_size)++;
-
-    if (*s_size >= *s_capacity) {
-        *s_capacity *= 2;
-
-        *stations = (station*)realloc(*stations, *s_capacity * sizeof(station));
-    }
+void add_station(station &station_one, int &amount_station) {
+    system("cls");
+    cout << " Create a new station! Fill in the gaps\n Name station: ";
+    cin >>  station_one.name;
+    cout << " Number of workshops: ";
+    cin >> station_one.all_workshops;
+    cout << " Number of active workshops: ";
+    cin >> station_one.active_workshops;
+    cout << " Performance: ";
+    cin >> station_one.performance;
+    amount_station++;
 }
 
-void view_objects(pipe* pipes, int p_size) {
-    cout << "***Pipes***--------+----------------+-----------+\n";
-    cout << "| N |    Length     |    Diameter    | Condition|\n";
-    cout << "+------------------+----------------+-----------+\n";
-
-    if (p_size == 0) cout << "|            No pipes was added...              |\n";
-
-    for (int i = 0; i < p_size; i++)
-    printf("| %d|       %5d      |     %5d      |  %5s    |\n", i, pipes[i].length, pipes[i].diameter, pipes[i].condition);
-
-   /* cout << "***Stations***---+---------------------+------------------+-------------+\n";
-    cout << "|       Name     |    All workshops    | Active workshops | Performance |\n";
-    cout << "+----------------+---------------------+------------------+-------------+\n";
-
-    if (s_size == 0) cout << "|            No stations was added...                                   |\n";
-
-    for (int i = 0; i < s_size; i++)
-        printf("|       %7s      |     %5d      |  %5d    |   %4lf     |\n", stations[i].name, stations[i].all_workshops, stations[i].active_workshops, stations[i].performance);
-*/
+//void view_objects(pipe &pipe_one, station  &station_one, int &amount_pipe, int &amount_station) {
+void view_objects(pipe  pipe_one) {
+    //if (amount_pipe == 0) cout << "|            No pipe was added...              |\n";
+    //else {
+        cout << "***Pipe***--------+----------------+-----------+\n";
+        cout << "|    Length     |    Diameter    | Condition   |\n";
+        printf("|    %5d      |     %5d      |  %5s      |\n", pipe_one.length, pipe_one.diameter, pipe_one.condition);
+   // }
+    //if (amount_station == 0) cout << "|            No station was added...                                   |\n";
+   // else {
+       // cout << "***Station***----+---------------------+------------------+-------------+\n";
+       // cout << "|       Name     |    All workshops    | Active workshops | Performance |\n";
+       // printf("|       %7s      |     %5d      |  %5d    |   %1lf     |\n", station_one.name, station_one.all_workshops, station_one.active_workshops, station_one.performance);
+   // }
 }
+    
 
 void edit_pipe() {
 
@@ -111,30 +94,28 @@ void edit_station() {
 
 }
 
-void save(pipe* pipes, station* stations, int p_size, int s_size) {
+void save(pipe pipe_one, station &station_one) {
     ofstream fout;
     fout.open("data.txt", ios::out);
     if (fout.is_open())
     {
-        fout << "***Pipes***\n";
-        for (int i = 0; i < p_size; i++)
-            fout << i << endl << pipes[i].length << endl << pipes[i].diameter << endl << pipes[i].condition << endl;
-        fout.close();
+        fout << "***Pipe***\n";
+        fout << pipe_one.length << endl << pipe_one.diameter << endl << pipe_one.condition << endl;
     }
+    fout.close();
 }
 
 pipe download() {
     ifstream fin;
-    pipe pipes;
+    pipe pipe_f;
     fin.open("data.txt", ios::in);
-    if (fin.is_open())
-    { 
-    //for (int i = 0; i < p_size; i++) {
-        fin >> pipes.length;
-        fin >> pipes.diameter;
-        fin >> pipes.condition;
+    if (fin.is_open()) {
+        fin >> pipe_f.length;
+        fin >> pipe_f.diameter;
+        fin >> pipe_f.condition;
     }
- return pipes;
+    fin.close();
+    return pipe_f;
 }
 
 void print_menu() {
@@ -145,21 +126,21 @@ void print_menu() {
 
 int main()
 {
-    int variant, p_size = 0, p_capacity = 1,s_size = 0, s_capacity = 1; 
-    pipe* pipes = (pipe*)malloc(p_capacity * sizeof(pipe)); //память под массив товаров
-    station* stations = (station*)malloc(s_capacity * sizeof(station));
+    int variant, amount_pipe=0, amount_station=0;
+    pipe pipe_one{};
+    station station_one{};
     do {
         print_menu();
         variant = check_variant(0,7);
         switch (variant) {
             case 1:
-                add_pipe(&pipes, &p_size, &p_capacity);
+                add_pipe(pipe_one, amount_pipe);
                 break;
             case 2:
-                add_station(&stations, &s_size, &s_capacity);
+                add_station(station_one, amount_station);
                 break;
             case 3:
-                view_objects(pipes, p_size);
+                view_objects(pipe_one);
                 break;
             case 4:
                 edit_pipe();
@@ -168,12 +149,11 @@ int main()
                 edit_station();
                 break;
             case 6:
-                save(pipes, stations, p_size, s_size);
+                save(pipe_one, station_one);
                 break;
             case 7:
-               // view_objects(download());
+                view_objects(download());
                 break;
-            //default:   cout << "Invalid value. Try again:";
          }
 
         if (variant != 0)
