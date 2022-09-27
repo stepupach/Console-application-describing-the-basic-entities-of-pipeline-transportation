@@ -85,7 +85,7 @@ int check_int (int i, int min, int max) {
     return variant;
 }*/
 
-pipe add_pipe(pipe &pipe_one, int &amount_pipe) {
+pipe add_pipe(pipe &pipe_one) {
     system("cls");
     cout << "Create a new pipe! Fill in the gaps\n Length (100-10000): ";
     pipe_one.length = check_double(pipe_one.length, 100, 10000);
@@ -93,55 +93,72 @@ pipe add_pipe(pipe &pipe_one, int &amount_pipe) {
     pipe_one.diameter = check_double(pipe_one.diameter, 10, 999);;
     cout << " Condition 0 - Under repair\n           1 - OK\n->";
     pipe_one.condition = check_int(pipe_one.condition, 0, 1);
-    amount_pipe++;
     return pipe_one;
 }
 
-station add_station(station &station_one, int &amount_station) {
+station add_station(station &station_one) {
     system("cls");
     cout << " Create a new station! Fill in the gaps\n Name station: ";
     cin >> station_one.name;
     cout << " Number of workshops (2-10): ";
     station_one.all_workshops = check_int (station_one.all_workshops, 2, 10);
     cout << " Number of active workshops(1-10): ";
-    station_one.active_workshops = check_int (station_one.active_workshops, 1, 10);
+    station_one.active_workshops = check_int (station_one.active_workshops, 1, station_one.all_workshops-1);
     cout << " Performance, 0,00% (0.00-1.00): ";
     station_one.performance = check_double (station_one.performance, 0, 1);
-    amount_station++;
     return station_one;
 }
 
 void view_pipe(pipe  pipe_one) {
-    //if (amount_pipe == 0) cout << "|            No pipe was added...              |\n";
-    //else {
-        cout << "***Pipe***--------+----------------+-----------+\n";
-        cout << "|    Length     |    Diameter    | Condition   |\n";
-        printf("|    %.2f     |     %.2f      |  %5d      |\n", pipe_one.length, pipe_one.diameter, pipe_one.condition);
-   // }
-    //if (amount_station == 0) cout << "|            No station was added...                                   |\n";
-   // else {
-       // cout << "***Station***----+---------------------+------------------+-------------+\n";
-      //  cout << "|       Name     |    All workshops    | Active workshops | Performance |\n";
-      //  printf("|       %5s      |     %5d      |  %5d    |   %.2f     |\n", station_one.name, station_one.all_workshops, station_one.active_workshops, station_one.performance);
-   // }
+    cout << "\n***Pipe***------+----------------+-----------------------------------------+\n";
+    cout << "|    Length     |    Diameter    | Condition: 0 - Under repair,   1 - OK   |\n";
+    printf("|    %.2f       |     %.2f       |  %5d                                  |\n",
+           pipe_one.length, pipe_one.diameter, pipe_one.condition);
+}
+
+void view_station(station  station_one) {
+     cout << "\n***Station***----+---------------------+------------------+-------------+\n";
+     cout << "|       Name     |    All workshops    | Active workshops | Performance |\n";
+     printf("|       %5s      |     %5d      |  %5d    |   %.2f     |\n", station_one.name, station_one.all_workshops, station_one.active_workshops, station_one.performance);
 }
     
-
-void edit_pipe() {
-
+pipe edit_pipe(pipe &pipe_one) {
+    string answer;
+    system("cls");
+    view_pipe(pipe_one);
+    cout << "\nDo you want to change the condition of the pipe? (yes/no) ";
+    do
+    {
+        cin >> answer;
+        if ((answer == "yes" && pipe_one.condition == 0) || (answer == "no" && pipe_one.condition == 1))
+        {
+            pipe_one.condition = 1;
+            break;
+        }
+        else if ((answer == "yes" && pipe_one.condition == 1) || (answer == "no" && pipe_one.condition == 0))
+        {
+            pipe_one.condition = 0;
+            break;
+        }
+        cout << "Type 'yes / no' ";
+    }while (answer != "yes" || answer != "no");
+    return pipe_one;
 }
 
 void edit_station() {
 
 }
 
-void save(pipe pipe_one, station &station_one) {
+void save(pipe pipe_one, station station_one) {
     ofstream fout;
     fout.open("data.txt", ios::out);
     if (fout.is_open())
     {
         fout << "***Pipe***\n";
         fout << "Length " << pipe_one.length << endl << "Diameter " << pipe_one.diameter << endl << "Condition " << pipe_one.condition << endl;
+        fout << "***Station***\n";
+        fout << "Name " << station_one.name << endl << "All workshops " << station_one.all_workshops<< endl
+             << "Active workshops " << station_one.active_workshops << endl << "Performance " << station_one.performance;
     }
     fout.close();
 }
@@ -152,20 +169,19 @@ pipe download_pipe (pipe pipe_one) {
     if (fin.is_open())
     {
         string word;
-        //double length;
         while (fin >> word)
         {
-            if (word == "Length")
+            if (word == "Length ")
             {
                 fin >> pipe_one.length;
                 break;
             }
-            if (word == "Diameter")
+            if (word == "Diameter ")
             {
                 fin >> pipe_one.diameter;
                 break;
             }
-            if (word == "Condition")
+            if (word == "Condition ")
             {
                 fin >> pipe_one.condition;
                 break;
@@ -175,6 +191,41 @@ pipe download_pipe (pipe pipe_one) {
     }
     else cout << "Error opening file!" << endl;
     return pipe_one;
+}
+
+station download_station(station station_one) {
+    ifstream fin;
+    fin.open("data.txt", ios::in);
+    if (fin.is_open())
+    {
+        string word;
+        while (fin >> word)
+        {
+            if (word == "Name ")
+            {
+                fin >> station_one.name;
+                break;
+            }
+            if (word == "All workshops ")
+            {
+                fin >> station_one.all_workshops;
+                break;
+            }
+            if (word == "Active workshops ")
+            {
+                fin >> station_one.active_workshops;
+                break;
+            }
+            if (word == "Performance  ")
+            {
+                fin >> station_one.performance;
+                break;
+            }
+        }
+        fin.close();
+    }
+    else cout << "Error opening file!" << endl;
+    return station_one;
 }
 
 void print_menu() {
@@ -194,22 +245,23 @@ int main()
             switch (variant) {
             case 1:
             {
-                add_pipe(pipe_one, amount_pipe);
+                add_pipe(pipe_one);
                 break;
             }
             case 2:
             {
-                add_station(station_one, amount_station);
+                add_station(station_one);
                 break;
             }
             case 3:
             {
                 view_pipe(pipe_one);
+                view_station(station_one);
                 break;
             }
             case 4:
             {
-                edit_pipe();
+                edit_pipe(pipe_one);
                 break;
             }
             case 5:
@@ -225,13 +277,14 @@ int main()
             case 7:
             {
                 view_pipe(download_pipe(pipe_one));
+                view_station(download_station(station_one));
                 break;
             }
             case 0:
             {
+                cout << "\nGood luck!\n";
                 return 0;
             }
-           // default: cout << "try again";
             }
             if (variant != 0)
                 system("pause");

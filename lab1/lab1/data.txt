@@ -1,4 +1,9 @@
 ***Pipe***
-Length 102
+Length 100
 Diameter 20
 Condition 1
+***Station***
+Name 
+All workshops 0
+Active workshops 0
+Performance 0
