@@ -1,4 +1,4 @@
 ***Pipe***
-1
-2
-ok
+Length 102
+Diameter 20
+Condition 1

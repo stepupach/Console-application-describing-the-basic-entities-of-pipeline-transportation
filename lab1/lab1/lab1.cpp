@@ -10,7 +10,7 @@ struct pipe {
 };
 
 struct station {
-    string name;
+    char name[10];
     int all_workshops, active_workshops;
     double performance;
 };
@@ -88,7 +88,6 @@ int check_int (int i, int min, int max) {
 pipe add_pipe(pipe &pipe_one, int &amount_pipe) {
     system("cls");
     cout << "Create a new pipe! Fill in the gaps\n Length (100-10000): ";
-    //scanf("%d", &pipe_one.length); //http://www.c-cpp.ru/content/scanf
     pipe_one.length = check_double(pipe_one.length, 100, 10000);
     cout <<" Diameter (10-999): ";
     pipe_one.diameter = check_double(pipe_one.diameter, 10, 999);;
@@ -101,7 +100,7 @@ pipe add_pipe(pipe &pipe_one, int &amount_pipe) {
 station add_station(station &station_one, int &amount_station) {
     system("cls");
     cout << " Create a new station! Fill in the gaps\n Name station: ";
-    check_string(station_one.name);
+    cin >> station_one.name;
     cout << " Number of workshops (2-10): ";
     station_one.all_workshops = check_int (station_one.all_workshops, 2, 10);
     cout << " Number of active workshops(1-10): ";
@@ -112,8 +111,7 @@ station add_station(station &station_one, int &amount_station) {
     return station_one;
 }
 
-//void view_objects(pipe &pipe_one, station  &station_one, int &amount_pipe, int &amount_station) {
-void view_objects(pipe  pipe_one) {
+void view_pipe(pipe  pipe_one) {
     //if (amount_pipe == 0) cout << "|            No pipe was added...              |\n";
     //else {
         cout << "***Pipe***--------+----------------+-----------+\n";
@@ -123,8 +121,8 @@ void view_objects(pipe  pipe_one) {
     //if (amount_station == 0) cout << "|            No station was added...                                   |\n";
    // else {
        // cout << "***Station***----+---------------------+------------------+-------------+\n";
-       // cout << "|       Name     |    All workshops    | Active workshops | Performance |\n";
-       // printf("|       %7s      |     %5d      |  %5d    |   %1lf     |\n", station_one.name, station_one.all_workshops, station_one.active_workshops, station_one.performance);
+      //  cout << "|       Name     |    All workshops    | Active workshops | Performance |\n";
+      //  printf("|       %5s      |     %5d      |  %5d    |   %.2f     |\n", station_one.name, station_one.all_workshops, station_one.active_workshops, station_one.performance);
    // }
 }
     
@@ -143,22 +141,40 @@ void save(pipe pipe_one, station &station_one) {
     if (fout.is_open())
     {
         fout << "***Pipe***\n";
-        fout << pipe_one.length << endl << pipe_one.diameter << endl << pipe_one.condition << endl;
+        fout << "Length " << pipe_one.length << endl << "Diameter " << pipe_one.diameter << endl << "Condition " << pipe_one.condition << endl;
     }
     fout.close();
 }
 
-pipe download() {
+pipe download_pipe (pipe pipe_one) {
     ifstream fin;
-    pipe pipe_f;
     fin.open("data.txt", ios::in);
-    if (fin.is_open()) {
-        fin >> pipe_f.length;
-        fin >> pipe_f.diameter;
-        fin >> pipe_f.condition;
+    if (fin.is_open())
+    {
+        string word;
+        //double length;
+        while (fin >> word)
+        {
+            if (word == "Length")
+            {
+                fin >> pipe_one.length;
+                break;
+            }
+            if (word == "Diameter")
+            {
+                fin >> pipe_one.diameter;
+                break;
+            }
+            if (word == "Condition")
+            {
+                fin >> pipe_one.condition;
+                break;
+            }
+        }
+        fin.close();
     }
-    fin.close();
-    return pipe_f;
+    else cout << "Error opening file!" << endl;
+    return pipe_one;
 }
 
 void print_menu() {
@@ -188,7 +204,7 @@ int main()
             }
             case 3:
             {
-                view_objects(pipe_one);
+                view_pipe(pipe_one);
                 break;
             }
             case 4:
@@ -208,7 +224,7 @@ int main()
             }
             case 7:
             {
-                view_objects(download());
+                view_pipe(download_pipe(pipe_one));
                 break;
             }
             case 0:
@@ -220,6 +236,5 @@ int main()
             if (variant != 0)
                 system("pause");
     }
-
     return 0;
 }
