@@ -14,26 +14,6 @@ struct station {
     double performance;
 };
 
-string check_string(string s) { //https://ru.stackoverflow.com/questions/627884/
-    int i = 0, k = 0;
-    getline(cin, s);
-    do {
-        int i = 0, k = 0;
-        getline(cin, s);
-        while (s[i])
-        {
-            if (s[i] >= '0' && s[i] <= '9')
-            {
-                k++;
-                break;
-            }
-            i++;
-            if (k != 0) cout << "Only letters!";
-        }
-    } while (k != 0);
-    return s;
-}
-
 double check_double (double i, int min, int max) {
     cin >> i;
     if (cin.fail() || i < min || i >max || cin.get() != '\n')
@@ -62,18 +42,6 @@ int check_int (int i, int min, int max) {
     return i;
 }
 
-/*int check_variant(int min, int max) {
-    int variant;
-    string s; // строка для считывания введённых данных
-    getline(cin, s);
-    // проверка
-    while (sscanf_s(s.c_str(), "%d", &variant) != 1 || cin.fail() || variant < min || variant >max || check_string(s) == 2) {
-        cout << "Invalid value. Try again:";
-        getline(cin, s);
-    }
-    return variant;
-}*/
-
 pipe add_pipe(pipe &pipe_one) {
     system("cls");
     cout << "Create a new pipe! Fill in the gaps\n Length (100-10000): ";
@@ -93,7 +61,7 @@ station add_station(station &station_one) {
     station_one.all_workshops = check_int (station_one.all_workshops, 1, 10);
     cout << " Number of active workshops(0-10): ";
     station_one.active_workshops = check_int (station_one.active_workshops, 0, station_one.all_workshops);
-    cout << " Performance, 0,00% (0.00-1.00): ";
+    cout << " Performance, 0.00% (0.00-1.00): ";
     station_one.performance = check_double (station_one.performance, 0, 1);
     return station_one;
 }

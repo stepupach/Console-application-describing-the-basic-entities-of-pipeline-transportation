@@ -1,10 +1,10 @@
 ***Pipe***
 Length 100
-Diameter 10
-Condition 1
+Diameter 20
+Condition 0
 
 ***Station***
-Name 2
+Name mash
 All workshops 2
-Active workshops 1
+Active workshops 2
 Performance 1
