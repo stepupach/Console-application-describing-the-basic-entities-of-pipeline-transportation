@@ -21,7 +21,7 @@ double check_double (double i, int min, int max) {
         do {
             cin.clear();
             cin.ignore(10000, '\n');
-            cout << "Invalid value. Check conditions and try again. ";
+            cout << "Try again. Enter double: ";
             cin >> i;
         } while (cin.fail() || i < min || i >max || cin.get() != '\n'); 
     }
@@ -69,7 +69,7 @@ station add_station(station &station_one) {
 void view_pipe(pipe  &pipe_one) {
     cout << "\n***Pipe***------+----------------+-----------------------------------------+\n";
     cout << "|    Length     |    Diameter    | Condition: 0 - Under repair,   1 - OK   |\n";
-    printf("|    %.2f       |     %.2f       |  %5d                                  |\n",
+    printf("|    %.2f     |     %.2f      |  %5d                                  |\n",
            pipe_one.length, pipe_one.diameter, pipe_one.condition);
 }
 
@@ -81,9 +81,7 @@ void view_station(station  &station_one) {
     
 pipe edit_pipe(pipe &pipe_one) {
     string answer;
-    system("cls");
-    view_pipe(pipe_one);
-    cout << "\nDo you want to change the condition of the pipe? (yes/no) ";
+    cout << "\nNow pipe condition: " << pipe_one.condition << ". Cnahge condition (yes/no) ? ";
     do
     {
         cin >> answer;
@@ -103,8 +101,6 @@ pipe edit_pipe(pipe &pipe_one) {
 }
 
 station edit_station(station& station_one) {
-    system("cls");
-    view_station(station_one);
     cout << "Now station has " << station_one.active_workshops << " active workshops. Type new amount active workshops\n";
     station_one.active_workshops = check_int(station_one.active_workshops, 0, station_one.all_workshops);
     return station_one;
@@ -120,16 +116,17 @@ void save(pipe &pipe_one, station &station_one) {
         fout << "\n***Station***\n";
         fout << "Name " << station_one.name << endl << "All workshops " << station_one.all_workshops<< endl
              << "Active workshops " << station_one.active_workshops << endl << "Performance " << station_one.performance;
+        fout.close();
     }
     fout.close();
 }
 
-pipe download_pipe (pipe &pipe_one) {
+/*pipe download_pipe(pipe& pipe_one) {
     ifstream fin;
+    string word;
     fin.open("data.txt", ios::in);
     if (fin.is_open())
     {
-        string word;
         while (fin >> word)
         {
             if (word == "Length ")
@@ -150,7 +147,26 @@ pipe download_pipe (pipe &pipe_one) {
         }
         fin.close();
     }
-    else cout << "Error opening file!" << endl;
+    else cout << "Error opening file!";
+    //fin.close();
+    view_pipe(pipe_one);
+    return pipe_one;
+} */
+
+pipe download_pipe(pipe& pipe_one) {
+    ifstream fin;
+    string word;
+    fin.open("data.txt", ios::in);
+    if (fin.is_open())
+    {
+       fin >> pipe_one.length;
+       fin >> pipe_one.diameter;
+       fin >> pipe_one.condition;
+       fin.close();
+    }
+    else cout << "Error opening file!";
+    //fin.close();
+    view_pipe(pipe_one);
     return pipe_one;
 }
 
@@ -198,7 +214,7 @@ void print_menu() {
 int main()
 {
     int variant = 10, amount_pipe = 0, amount_station = 0;
-    pipe pipe_one;
+    pipe pipe_one{};
     station station_one;
     while (1) {
         print_menu();
@@ -238,9 +254,7 @@ int main()
             case 7:
             {
                 download_pipe(pipe_one);
-                view_pipe(pipe_one);
                 download_station(station_one);
-                view_station(station_one);
                 break;
             }
             case 0:
