@@ -66,22 +66,19 @@ station add_station(station &station_one) {
     return station_one;
 }
 
-void view_pipe(pipe  &pipe_one) {
+void view(pipe  &pipe_one, station& station_one) {
     cout << "\n***Pipe***------+----------------+-----------------------------------------+\n";
     cout << "|    Length     |    Diameter    | Condition: 0 - Under repair,   1 - OK   |\n";
-    printf("|    %.2f     |     %.2f      |  %5d                                  |\n",
+    printf("|    %.2f    |     %.2f      |  %5d                                  |\n",
            pipe_one.length, pipe_one.diameter, pipe_one.condition);
+    cout << "\n***Station***----+---------------------+------------------+-------------+\n";
+    cout << "|       Name     |    All workshops    | Active workshops | Performance |\n";
+    printf("|       %s     |     %5d           |  %5d           |   %.2f      |\n", station_one.name, station_one.all_workshops, station_one.active_workshops, station_one.performance);
 }
-
-void view_station(station  &station_one) {
-     cout << "\n***Station***----+---------------------+------------------+-------------+\n";
-     cout << "|       Name     |    All workshops    | Active workshops | Performance |\n";
-     printf("|       %5s      |     %5d      |  %5d    |   %.2f     |\n", station_one.name, station_one.all_workshops, station_one.active_workshops, station_one.performance);
-}
-    
+     
 pipe edit_pipe(pipe &pipe_one) {
     string answer;
-    cout << "\nNow pipe condition: " << pipe_one.condition << ". Cnahge condition (yes/no) ? ";
+    cout << "\nNow pipe condition (0 - Under repair, 1 - OK): " << pipe_one.condition << ". Cnahge condition (yes/no) ? ";
     do
     {
         cin >> answer;
@@ -111,98 +108,24 @@ void save(pipe &pipe_one, station &station_one) {
     fout.open("data.txt", ios::out);
     if (fout.is_open())
     {
-        fout << "***Pipe***\n";
-        fout << "Length " << pipe_one.length << endl << "Diameter " << pipe_one.diameter << endl << "Condition " << pipe_one.condition << endl;
-        fout << "\n***Station***\n";
-        fout << "Name " << station_one.name << endl << "All workshops " << station_one.all_workshops<< endl
-             << "Active workshops " << station_one.active_workshops << endl << "Performance " << station_one.performance;
+        fout << pipe_one.length << endl << pipe_one.diameter << endl <<pipe_one.condition << endl;
+        fout << station_one.name << endl << station_one.all_workshops<< endl<< station_one.active_workshops << endl <<  station_one.performance;
         fout.close();
     }
-    fout.close();
+    else cout << "Error opening file!";
 }
 
-/*pipe download_pipe(pipe& pipe_one) {
+void download(pipe& pipe_one, station& station_one) {
     ifstream fin;
-    string word;
     fin.open("data.txt", ios::in);
     if (fin.is_open())
     {
-        while (fin >> word)
-        {
-            if (word == "Length ")
-            {
-                fin >> pipe_one.length;
-                break;
-            }
-            if (word == "Diameter ")
-            {
-                fin >> pipe_one.diameter;
-                break;
-            }
-            if (word == "Condition ")
-            {
-                fin >> pipe_one.condition;
-                break;
-            }
-        }
+        fin >> pipe_one.length >> pipe_one.diameter >> pipe_one.condition;
+        fin >> station_one.name >> station_one.all_workshops >> station_one.active_workshops >> station_one.performance;
         fin.close();
     }
     else cout << "Error opening file!";
-    //fin.close();
-    view_pipe(pipe_one);
-    return pipe_one;
-} */
-
-pipe download_pipe(pipe& pipe_one) {
-    ifstream fin;
-    string word;
-    fin.open("data.txt", ios::in);
-    if (fin.is_open())
-    {
-       fin >> pipe_one.length;
-       fin >> pipe_one.diameter;
-       fin >> pipe_one.condition;
-       fin.close();
-    }
-    else cout << "Error opening file!";
-    //fin.close();
-    view_pipe(pipe_one);
-    return pipe_one;
-}
-
-station download_station(station &station_one) {
-    ifstream fin;
-    fin.open("data.txt", ios::in);
-    if (fin.is_open())
-    {
-        string word;
-        while (fin >> word)
-        {
-            if (word == "Name ")
-            {
-                fin >> station_one.name;
-                break;
-            }
-            if (word == "All workshops ")
-            {
-                fin >> station_one.all_workshops;
-                break;
-            }
-            if (word == "Active workshops ")
-            {
-                fin >> station_one.active_workshops;
-                break;
-            }
-            if (word == "Performance  ")
-            {
-                fin >> station_one.performance;
-                break;
-            }
-        }
-        fin.close();
-    }
-    else cout << "Error opening file!" << endl;
-    return station_one;
+    view(pipe_one, station_one);
 }
 
 void print_menu() {
@@ -215,7 +138,7 @@ int main()
 {
     int variant = 10, amount_pipe = 0, amount_station = 0;
     pipe pipe_one{};
-    station station_one;
+    station station_one{};
     while (1) {
         print_menu();
         variant=check_int(variant, 0, 7);
@@ -232,8 +155,7 @@ int main()
             }
             case 3:
             {
-                view_pipe(pipe_one);
-                view_station(station_one);
+                view(pipe_one, station_one);
                 break;
             }
             case 4:
@@ -253,8 +175,7 @@ int main()
             }
             case 7:
             {
-                download_pipe(pipe_one);
-                download_station(station_one);
+                download(pipe_one, station_one);
                 break;
             }
             case 0:
