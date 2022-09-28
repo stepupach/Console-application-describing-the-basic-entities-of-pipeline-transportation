@@ -1,5 +1,4 @@
-﻿//#define _CRT_SECURE_NO_WARNINGS
-#include <iostream>
+﻿#include <iostream>
 #include <fstream>
 #include <string>
 using namespace std;
@@ -35,16 +34,6 @@ string check_string(string s) { //https://ru.stackoverflow.com/questions/627884/
     return s;
 }
 
-/*string check_char(string i) { // строка для считывания введённых данных
-    getline(cin, s);
-    // проверка
-    while (sscanf_s(s.c_str(), "%s", &i) != 1) {
-        cout << "Invalid value. Try again:";
-        getline(cin, s);
-    }
-    return i;
-}*/
-
 double check_double (double i, int min, int max) {
     cin >> i;
     if (cin.fail() || i < min || i >max || cin.get() != '\n')
@@ -52,7 +41,7 @@ double check_double (double i, int min, int max) {
         do {
             cin.clear();
             cin.ignore(10000, '\n');
-            cout << "Try again. Enter double:";
+            cout << "Invalid value. Check conditions and try again. ";
             cin >> i;
         } while (cin.fail() || i < min || i >max || cin.get() != '\n'); 
     }
@@ -100,23 +89,23 @@ station add_station(station &station_one) {
     system("cls");
     cout << " Create a new station! Fill in the gaps\n Name station: ";
     cin >> station_one.name;
-    cout << " Number of workshops (2-10): ";
-    station_one.all_workshops = check_int (station_one.all_workshops, 2, 10);
-    cout << " Number of active workshops(1-10): ";
-    station_one.active_workshops = check_int (station_one.active_workshops, 1, station_one.all_workshops-1);
+    cout << " Number of workshops (1-10): ";
+    station_one.all_workshops = check_int (station_one.all_workshops, 1, 10);
+    cout << " Number of active workshops(0-10): ";
+    station_one.active_workshops = check_int (station_one.active_workshops, 0, station_one.all_workshops);
     cout << " Performance, 0,00% (0.00-1.00): ";
     station_one.performance = check_double (station_one.performance, 0, 1);
     return station_one;
 }
 
-void view_pipe(pipe  pipe_one) {
+void view_pipe(pipe  &pipe_one) {
     cout << "\n***Pipe***------+----------------+-----------------------------------------+\n";
     cout << "|    Length     |    Diameter    | Condition: 0 - Under repair,   1 - OK   |\n";
     printf("|    %.2f       |     %.2f       |  %5d                                  |\n",
            pipe_one.length, pipe_one.diameter, pipe_one.condition);
 }
 
-void view_station(station  station_one) {
+void view_station(station  &station_one) {
      cout << "\n***Station***----+---------------------+------------------+-------------+\n";
      cout << "|       Name     |    All workshops    | Active workshops | Performance |\n";
      printf("|       %5s      |     %5d      |  %5d    |   %.2f     |\n", station_one.name, station_one.all_workshops, station_one.active_workshops, station_one.performance);
@@ -145,25 +134,29 @@ pipe edit_pipe(pipe &pipe_one) {
     return pipe_one;
 }
 
-void edit_station() {
-
+station edit_station(station& station_one) {
+    system("cls");
+    view_station(station_one);
+    cout << "Now station has " << station_one.active_workshops << " active workshops. Type new amount active workshops\n";
+    station_one.active_workshops = check_int(station_one.active_workshops, 0, station_one.all_workshops);
+    return station_one;
 }
 
-void save(pipe pipe_one, station station_one) {
+void save(pipe &pipe_one, station &station_one) {
     ofstream fout;
     fout.open("data.txt", ios::out);
     if (fout.is_open())
     {
         fout << "***Pipe***\n";
         fout << "Length " << pipe_one.length << endl << "Diameter " << pipe_one.diameter << endl << "Condition " << pipe_one.condition << endl;
-        fout << "***Station***\n";
+        fout << "\n***Station***\n";
         fout << "Name " << station_one.name << endl << "All workshops " << station_one.all_workshops<< endl
              << "Active workshops " << station_one.active_workshops << endl << "Performance " << station_one.performance;
     }
     fout.close();
 }
 
-pipe download_pipe (pipe pipe_one) {
+pipe download_pipe (pipe &pipe_one) {
     ifstream fin;
     fin.open("data.txt", ios::in);
     if (fin.is_open())
@@ -193,7 +186,7 @@ pipe download_pipe (pipe pipe_one) {
     return pipe_one;
 }
 
-station download_station(station station_one) {
+station download_station(station &station_one) {
     ifstream fin;
     fin.open("data.txt", ios::in);
     if (fin.is_open())
@@ -237,8 +230,8 @@ void print_menu() {
 int main()
 {
     int variant = 10, amount_pipe = 0, amount_station = 0;
-    pipe pipe_one{};
-    station station_one{};
+    pipe pipe_one;
+    station station_one;
     while (1) {
         print_menu();
         variant=check_int(variant, 0, 7);
@@ -266,7 +259,7 @@ int main()
             }
             case 5:
             {
-                edit_station();
+                edit_station(station_one);
                 break;
             }
             case 6:
@@ -276,8 +269,10 @@ int main()
             }
             case 7:
             {
-                view_pipe(download_pipe(pipe_one));
-                view_station(download_station(station_one));
+                download_pipe(pipe_one);
+                view_pipe(pipe_one);
+                download_station(station_one);
+                view_station(station_one);
                 break;
             }
             case 0:
