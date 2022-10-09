@@ -16,30 +16,25 @@ struct station {
 
 double check_double (double i, int min, int max) {
     cin >> i;
-    if (cin.fail() || i < min || i > max || cin.get() != '\n')
-    {
-        do {
+        while (cin.fail() || i < min || i >  max || cin.get() != '\n') {
             cin.clear();
             cin.ignore(10000, '\n');
-            cout << "Try again. Enter double: ";
+            cout << "Try again. Enter double ("<< min <<"-"<< max <<"): ";
             cin >> i;
-        } while (cin.fail() || i < min || i >  max || cin.get() != '\n'); 
-    }
+        } 
    return i;
 }
 
 int check_int (int i, int min, int max) {
     cin >> i;
-    if (cin.fail() || i < min || i > max || cin.get() != '\n')
-    {
-        do {
+        while (cin.fail() || i < min || i > max || cin.get() != '\n') //https://www.cyberforum.ru/cpp-beginners/thread547287.html 
+        {
             cin.clear();
             cin.ignore(10000, '\n');
-            cout << "Try again. Enter int:";
+            cout << "Try again. Enter int (" << min << "-" << max << "): ";
             cin >> i;
-        } while (cin.fail() || i < min || i > max || cin.get() != '\n'); //https://www.cyberforum.ru/cpp-beginners/thread547287.html
-    }
-    return i;
+        }
+   return i;
 }
 
 void add_pipe(pipe &pipe_one) {
@@ -65,10 +60,10 @@ void add_station(station &station_one) {
 }
 
 void view(pipe  &pipe_one, station& station_one) {
-    cout << "\n***Station***----+---------------------+------------------+-------------+\n";
+    cout << "\n***Station***----+---------------------+------------------+\n-->";
     cout << station_one.name;
-    cout << "\n|    All workshops    | Active workshops | Performance % |\n";
-    printf("|         %d         |       %d         |     %.2f     |\n", station_one.all_workshops, station_one.active_workshops, station_one.performance);
+    cout << "\n|    All workshops    | Active workshops  | Performance % |\n";
+    printf("|         %d         |       %d         |     %.2f    |\n", station_one.all_workshops, station_one.active_workshops, station_one.performance);
     cout << "\n***Pipe***------+----------------+-----------------------------------------+\n";
     cout << "|    Length     |    Diameter    | Condition: 0 - Under repair,   1 - OK   |\n";
     printf("|    %.2f     |     %.2f     |              %d                          |\n", pipe_one.length, pipe_one.diameter, pipe_one.condition);
@@ -76,7 +71,7 @@ void view(pipe  &pipe_one, station& station_one) {
      
 void edit_pipe(pipe &pipe_one) {
     string answer;
-    cout << "\n Now pipe condition: " << pipe_one.condition << ".\n Cnahge condition (write 'yes/no')?\n ";
+    cout << "\n Pipe condition: " << pipe_one.condition << ".\n Cnahge it (write 'yes/no')?\n ";
     do
     {
         cin >> answer;
@@ -95,7 +90,7 @@ void edit_pipe(pipe &pipe_one) {
 }
 
 void edit_station(station& station_one) {
-    cout << "Now station has " << station_one.active_workshops << " active workshops. Type new amount active workshops\n";
+    cout << "Station has " << station_one.active_workshops << " active workshops. New amount active workshops:\n";
     station_one.active_workshops = check_int(station_one.active_workshops, 0, station_one.all_workshops);
     station_one.performance = (double)station_one.active_workshops / (double)station_one.all_workshops * 100;
 }
