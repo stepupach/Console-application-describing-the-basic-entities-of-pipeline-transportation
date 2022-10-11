@@ -14,18 +14,45 @@ struct station {
     double performance;
 };
 
-double check_double (double i, int min, int max) {
-    cin >> i;
-        while (cin.fail() || i < min || i >  max || cin.get() != '\n') {
+template <typename type>
+
+type check_number (type min, type max) {
+    type i;
+   // cin >> i;
+        while ((cin>>i).fail() || i < min || i >  max || cin.get() != '\n') {
             cin.clear();
             cin.ignore(10000, '\n');
-            cout << "Try again. Enter double ("<< min <<"-"<< max <<"): ";
-            cin >> i;
+            cout << "Try again. Enter number ("<< min <<"-"<< max <<"): ";
+            //cin >> i;
         } 
    return i;
 }
 
-int check_int (int i, int min, int max) {
+istream& operator >> (istream& in, pipe& pipe_one)
+{
+    system("cls");
+    cout << "Create a new pipe! Fill in the gaps\n Length (500-20000 m): ";
+    pipe_one.length = check_number(500.0, 20000.0);
+    cout << " Diameter (100-5000 m): ";
+    pipe_one.diameter = check_number(100.0, 5000.0);
+    cout << " Condition 0 - Under repair\n           1 - OK\n->";
+    pipe_one.condition = check_number(0, 1);
+    return in;
+}
+
+ostream& operator << (ostream& out, pipe& pipe_one)
+{
+   //cout << "\n***Station***----+---------------------+------------------+\n-->";
+   // cout << station_one.name;
+   // cout << "\n|    All workshops    | Active workshops  | Performance % |\n";
+   // printf("|         %d         |       %d         |     %.2f    |\n", station_one.all_workshops, station_one.active_workshops, station_one.performance);
+    out << "\n***Pipe***------+----------------+-----------------------------------------+\n";
+    out << "|    Length     |    Diameter    | Condition: 0 - Under repair,   1 - OK   |\n";
+    printf("|    %.2f     |     %.2f     |              %d                          |\n", pipe_one.length, pipe_one.diameter, pipe_one.condition);
+    return out;
+}
+
+/*int check_int(int i, int min, int max) {
     cin >> i;
         while (cin.fail() || i < min || i > max || cin.get() != '\n') //https://www.cyberforum.ru/cpp-beginners/thread547287.html 
         {
@@ -35,16 +62,16 @@ int check_int (int i, int min, int max) {
             cin >> i;
         }
    return i;
-}
+} */
 
 void add_pipe(pipe &pipe_one) {
     system("cls");
     cout << "Create a new pipe! Fill in the gaps\n Length (500-20000 m): ";
-    pipe_one.length = check_double(pipe_one.length, 500, 20000);
+    pipe_one.length = check_number(500.0, 20000.0);
     cout <<" Diameter (100-5000 m): ";
-    pipe_one.diameter = check_double(pipe_one.diameter, 100, 5000);
+    pipe_one.diameter = check_number(100.0, 5000.0);
     cout << " Condition 0 - Under repair\n           1 - OK\n->";
-    pipe_one.condition = check_int(pipe_one.condition, 0, 1);
+    pipe_one.condition = check_number(0, 1);
 }
 
 void add_station(station &station_one) {
@@ -52,9 +79,9 @@ void add_station(station &station_one) {
     cout << " Create a new station! Fill in the gaps\n Name station: ";
     getline(cin, station_one.name);
     cout << " Number of workshops (1-100): ";
-    station_one.all_workshops = check_int (station_one.all_workshops, 1, 100);
+    station_one.all_workshops = check_number(1, 100);
     cout << " Number of active workshops (<=all workshops): ";
-    station_one.active_workshops = check_int (station_one.active_workshops, 0, station_one.all_workshops);
+    station_one.active_workshops = check_number(0, station_one.all_workshops);
     station_one.performance = (double)station_one.active_workshops / (double)station_one.all_workshops * 100;
     cout << " Performance %: " << station_one.performance << endl;
 }
@@ -91,7 +118,7 @@ void edit_pipe(pipe &pipe_one) {
 
 void edit_station(station& station_one) {
     cout << "Station has " << station_one.active_workshops << " active workshops. New amount active workshops:\n";
-    station_one.active_workshops = check_int(station_one.active_workshops, 0, station_one.all_workshops);
+    station_one.active_workshops = check_number(0, station_one.all_workshops);
     station_one.performance = (double)station_one.active_workshops / (double)station_one.all_workshops * 100;
 }
 
@@ -100,8 +127,8 @@ void save(pipe &pipe_one, station &station_one) {
     fout.open("data.txt", ios::out);
     if (fout.is_open())
     {
-        fout << station_one.name << endl << station_one.all_workshops<< endl<< station_one.active_workshops << endl <<  station_one.performance << endl;
-        fout << pipe_one.length << endl << pipe_one.diameter << endl << pipe_one.condition << endl;
+        fout << station_one.name << endl << station_one.all_workshops<< endl<< station_one.active_workshops << endl <<  station_one.performance << endl
+             << pipe_one.length << endl << pipe_one.diameter << endl << pipe_one.condition << endl;
         fout.close();
     }
     else cout << "Error opening file!\n";
@@ -129,12 +156,11 @@ void print_menu() {
 
 int main()
 {
-    int variant = 10;
     pipe pipe_one{};
     station station_one{};
     while (1) {
         print_menu();
-            switch (check_int(variant, 0, 7)) {
+            switch (check_number(0, 7)) {
             case 1:
             {
                 add_pipe(pipe_one);
@@ -147,7 +173,8 @@ int main()
             }
             case 3:
             {
-                view(pipe_one, station_one);
+               // view(pipe_one, station_one);
+                cout << pipe_one;
                 break;
             }
             case 4:
@@ -176,8 +203,7 @@ int main()
                 return 0;
             }
             }
-            if (variant != 0)
-                system("pause");
+               system("pause");
     }
     return 0;
 }
