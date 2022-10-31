@@ -1,7 +1,24 @@
-뢠뢠 4
-100
-50
-50
-2324
-100
+pipe
 1
+mama
+500
+1000
+0
+pipe
+2
+papa
+5000
+2300
+1
+compressor station
+1
+makaka 2
+20
+5
+25
+compressor station
+2
+gsgs
+100
+100
+100
