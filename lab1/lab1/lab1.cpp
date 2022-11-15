@@ -2,51 +2,54 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include "pipes.h"
 #include "stations.h"
 #include "utils.h"
 
 using namespace std;
 
-pipes& select_pipe(vector<pipes>& pipe)
+int id_p = 1;
+int id_cs = 1;
+
+pipes& select_pipe(unordered_map<int, pipes>& pipe)
 {
     cout << "Enter pipe id: ";
-    unsigned int index = check_number<uint64_t>(1, pipe.size());
-    return pipe[index - 1];
+    int id = check_number<uint64_t>(1, pipe.size());
+    if (pipe.count(id) == 0)
+        cout << "Error! No pipe with this id\n";
+    else
+        return pipe[id];
 }
 
-stations& select_cs(vector<stations>& cs)
+stations& select_cs(unordered_map<int, stations>& cs)
 {
     cout << "Enter compressor station id: ";
-    unsigned int index = check_number<uint64_t>(1, cs.size());
-    return cs[index - 1];
+    int id = check_number<uint64_t>(1, cs.size());
+    if (cs.count(id) == 0)
+        cout << "Error! No CS with this id\n";
+    else
+        return cs[id];
 }
 
-void delete_pipe(vector<pipes>& pipe)
+void delete_pipe(unordered_map<int, pipes>& pipe)
 {
     cout << "Enter pipe id: ";
-    int index = check_number<uint64_t>(1, pipe.size());
-    auto i = pipe.cbegin();
-    pipe.erase(i + index - 1);
+    int id = check_number<uint64_t>(1, pipe.size());
+    if (pipe.count(id) == 0)
+        cout << "Error! No pipe with this id\n";
+    else
+        pipe.erase(id);
 }
 
-void delete_station(vector<stations>& cs)
+void delete_station(unordered_map<int, stations>& cs)
 {
     cout << "Enter compressor station id: ";
-    auto index = check_number<uint64_t>(1, cs.size());
-    auto i = cs.cbegin();
-    cs.erase(i + index - 1);
-}
-     
-void edit_pipe(pipes &pipe) {
-    cout << "\n Pipe condition: " << pipe.condition << ".\n Cnahge it (1- yes; 0 - no)?\n ";
-    if (check_number(0, 1) == 1) pipe.condition = (!pipe.condition);
-}
-
-void edit_station(stations& cs) {
-    cout << "Station has " << cs.active_workshops << " active workshops. New amount active workshops:\n";
-    cs.active_workshops = check_number(0, cs.all_workshops);
-    cs.performance = (double)cs.active_workshops / (double)cs.all_workshops * 100;
+    int id = check_number<uint64_t>(1, cs.size());
+    if (cs.count(id) == 0)
+        cout << "Error! No CS with this id\n";
+    else
+        cs.erase(id);
 }
 
 void save_pipe(ofstream& fout, const pipes& pipe)
@@ -54,7 +57,7 @@ void save_pipe(ofstream& fout, const pipes& pipe)
     string object;
     object = "pipe";
     fout << object << endl;
-    fout << pipe.id_pipe << endl << pipe.name_pipe << endl << pipe.length << endl << pipe.diameter << endl << pipe.condition << endl;
+    fout << pipe.maxId_pipe << endl << pipe.id_p << endl << pipe.name_pipe << endl << pipe.length << endl << pipe.diameter << endl << pipe.condition << endl;
 }
 
 void save_station(ofstream& fout, const stations& cs)
@@ -62,13 +65,14 @@ void save_station(ofstream& fout, const stations& cs)
     string object;
     object = "compressor station";
     fout << object << endl;
-    fout << cs.id_cs << endl << cs.name << endl << cs.all_workshops << endl << cs.active_workshops << endl << cs.performance << endl;
+    fout << cs.maxId_cs << endl << cs.id_cs << endl << cs.name << endl << cs.all_workshops << endl << cs.active_workshops << endl << cs.performance << endl;
 }
 
 pipes load_pipe(ifstream& fin)
 {
     pipes pipe;
-    fin >> pipe.id_pipe;
+    fin >> pipe.maxId_pipe;
+    fin >> pipe.id_p;
     fin >> pipe.name_pipe;
     fin >> pipe.length;
     fin >> pipe.diameter;
@@ -79,6 +83,7 @@ pipes load_pipe(ifstream& fin)
 stations load_station(ifstream& fin)
 {
     stations cs;
+    fin >> cs.maxId_cs;
     fin >> cs.id_cs;
     fin.ignore(10000, '\n');
     getline(fin, cs.name);
@@ -92,11 +97,11 @@ void print_menu() {
     system("cls"); 
     cout << "   Welcome! This is the menu. Select an action:\n";
     cout << "1. Add pipe\n2. Add compressor station\n3. View all objects\n4. Edit pipe\n5. Edit compressor station" << endl
-         << "6. Save\n7. Download\n8. Delete pipe\n9. Delete station\n10. Find object\n0. Exit\n->";
+         << "6. Save\n7. Download\n8. Delete pipe\n9. Delete station\n10. Find object\n11. Packet edit pipe\n0. Exit\n->";
 }
 
 template<typename T>
-using filter1 = bool(*)(const pipes& pipe, T p);
+using filter_pipe = bool(*)(const pipes& pipe, T p);
     bool check_condition(const pipes& pipe, bool p)
     {
         return pipe.condition == p;
@@ -107,20 +112,22 @@ using filter1 = bool(*)(const pipes& pipe, T p);
     }
 
 template<typename T>
-vector<int>find_pipe(const vector<pipes>& pipeline, filter1 <T> f, T p)
+vector<int>find_pipe(const unordered_map<int, pipes>& pipeline, filter_pipe <T> f, T p)
 {
     vector<int>res;
     int i = 0;
     for (auto& pipe : pipeline)
     {
-            if (f(pipe, p))  res.push_back(i);
+        if (f(pipe.second, p))  res.push_back(pipe.second.id_p);
         i++;
     }
+    if (res.empty())
+        cout << "No pipe with this parameter" << endl;
     return res;
 }
 
 template<typename T>
-using filter2 = bool(*)(const stations& cs, T p);
+using filter_cs = bool(*)(const stations& cs, T p);
     bool check_nameCS(const stations& cs, string p)
     {
         return cs.name == p;
@@ -132,37 +139,69 @@ using filter2 = bool(*)(const stations& cs, T p);
     }
 
 template<typename T>
-vector<int>find_cs(const vector<stations>& cs_sistem, filter2 <T> f, T p)
+vector<int>find_cs(const unordered_map<int, stations>& cs_sistem, filter_cs <T> f, T p)
 {
     vector<int>res;
     int i = 0;
     for (auto& cs : cs_sistem)
     {
-        if (f(cs, p)) res.push_back(i);
+        if (f(cs.second, p)) res.push_back(cs.second.id_cs);;
         i++;
     }
+    if (res.empty())
+        cout << "No CS with this parameter" << endl;
     return res;
+}
+
+void packet_edit_pipe(unordered_map<int, pipes>& pipeline)
+{
+    cout << "Edit 1 - all pipes, 2 - some pipes: ";
+    if (check_number(1, 2) == 1)
+    {
+        for (auto& pipe : pipeline)
+            pipes::edit_pipe(pipe.second);
+    }
+    else
+    {
+        vector <int> vectID;
+        while (true)
+        {
+            cout << "Enter pipe id - to edit, 0 - to complete: ";
+            int i = check_number(0, pipes::maxId_pipe);
+            if (i)
+            {
+                if (pipeline.count(i) == 0)
+                    cout << "Error! No pipe with this id\n";
+                else
+                    vectID.push_back(i);
+            }
+            else
+                break;
+        }
+        for (int i : vectID)
+            pipeline[i].condition = !pipeline[i].condition;
+    }
 }
 
 int main()
 {
-    vector <pipes> pipeline;
-    vector <stations> cs_sistem;
+    unordered_map <int, pipes> pipeline = {};
+    unordered_map <int, stations> cs_sistem = {};
     while (1) {
         print_menu();
-            switch (check_number(0, 10)) {
+            switch (check_number(0, 11)) {
             case 1:
             {
                 pipes pipe;
                 cin >> pipe;
-                pipeline.push_back(pipe);
+                pipeline.insert({ id_p, pipe });
                 break;
             }
             case 2:
             {
                 stations cs;
                 cin >> cs;
-                cs_sistem.push_back(cs);
+                cs_sistem.insert({ id_cs, cs });
                 break;
             }
             case 3:
@@ -172,19 +211,19 @@ int main()
                 if ((pipeline.size() != 0) && (cs_sistem.size() == 0))
                 {
                     for (auto& pipe : pipeline)
-                        cout << pipe << endl;
+                        cout << pipe.second << endl;
                 }
                 else if ((pipeline.size() == 0) && (cs_sistem.size() != 0))
                 {
                     for (auto& cs : cs_sistem)
-                        cout << cs << endl;
+                        cout << cs.second << endl;
                 }
                 else if ((pipeline.size() != 0) && (cs_sistem.size() != 0))
                 {
-                    for (auto& p : pipeline)
-                        cout << p << endl;
+                    for (auto& pipe : pipeline)
+                        cout << pipe.second << endl;
                     for (auto& cs : cs_sistem)
-                        cout << cs << endl;
+                        cout << cs.second << endl;
                 }
                 else cout << "Input objects" << endl;
                 break;
@@ -194,9 +233,9 @@ int main()
                 cin.clear();
                     if (pipeline.size() > 0)
                     {
-                        edit_pipe(select_pipe(pipeline));
+                        pipes::edit_pipe(select_pipe(pipeline));
                     }
-                    else cout << "Input pipe! " << endl;
+                    else cout << "Input pipe to edit! " << endl;
                 break;
             }
             case 5:
@@ -204,21 +243,24 @@ int main()
                 cin.clear();
                     if (cs_sistem.size() > 0)
                     {
-                        edit_station(select_cs(cs_sistem));
+                        stations::edit_station(select_cs(cs_sistem));
                     }
-                    else cout << "Input compressor station! " << endl;
+                    else cout << "Input compressor station to edit! " << endl;
                 break;
             }
             case 6:
             {
                 ofstream fout;
-                fout.open("data.txt", ios::out);
+                string fname;
+                cout << "Enter file's name: ";
+                getline(cin, fname);
+                fout.open(fname + ".txt", ios::out);
                 if (fout.is_open())
                 {
-                    for (pipes& pipe : pipeline)
-                        save_pipe(fout, pipe);
-                    for (stations& cs : cs_sistem)
-                        save_station(fout, cs);
+                    for (auto& pipe : pipeline)
+                        save_pipe(fout, pipe.second);
+                    for (auto& cs : cs_sistem)
+                        save_station(fout, cs.second);
                     break;
                 }
                 else cout << "Error opening file!\n";
@@ -230,16 +272,25 @@ int main()
                 system("cls");
                 string object;
                 ifstream fin;
-                fin.open("data.txt", ios::in);
+                string fname;
+                cout << "Enter file's name: ";
+                getline(cin, fname);
+                fin.open(fname + ".txt", ios::in);
                 if (fin.is_open())
                 {
                     while (!fin.eof())
                     {
                         getline(fin, object);
                         if (object == "pipe")
-                            pipeline.push_back(load_pipe(fin));
+                        {
+                            pipeline.insert({ id_p, load_pipe(fin) });
+                            id_p++;
+                        }
                         if (object == "compressor station")
-                            cs_sistem.push_back(load_station(fin));
+                        {
+                            cs_sistem.insert({ id_cs, load_station(fin) });
+                            id_cs++;
+                        }
                     }
                     break;
                 }
@@ -255,7 +306,7 @@ int main()
                 {
                     delete_pipe(pipeline);
                 }
-                else cout << "Input pipe!" << endl;
+                else cout << "Error! No pipes yet" << endl;
                 break;
             }
             case 9:
@@ -266,14 +317,14 @@ int main()
                 {
                     delete_station(cs_sistem);
                 }
-                else cout << "Input CS!" << endl;
+                else cout << "Error! No CS yet" << endl;
                 break;
             }
             case 10:
             {
                 cin.clear();
                 system("cls");
-                cout << "Search pipes or CS by filter (1 - pipes ; 0 - CS):  " << endl;
+                cout << "Search pipes or CS by filter (0 - CS , 1 - pipes):  " << endl;
                 if (check_number(0, 1) == 1)
                 {
                     cout << "Search pipes by filter (1 - name ; 2 - condition):  " << endl;
@@ -283,10 +334,10 @@ int main()
                     {
                         string pname;
                         cout << "Search pipes with name:  " << endl;
-                        cin.ignore(10000, '\n');
                         getline(cin, pname);
                         for (int i : find_pipe(pipeline, check_nameP, pname))
                             cout << pipeline[i];
+                        break;
                     }
                     case 2:
                     {
@@ -307,20 +358,28 @@ int main()
                     {
                         string csname;
                         cout << "Search CS with name:  " << endl;
-                        cin.ignore(10000, '\n');
                         getline(cin, csname);
                         for (int i : find_cs(cs_sistem, check_nameCS, csname))
                             cout << cs_sistem[i];
+                        break;
                     }
                     case 2:
                     {
                         cout << "Find CS with percent of no working shops (0 - 100 %):  " << endl;
-                        double nowork = check_number(0, 100);
+                        double nowork = check_number(0.0, 100.0);
                         for (int i : find_cs(cs_sistem, check_nowork, nowork))
                             cout << cs_sistem[i];
+                        break;
                     }
                     }
                 }
+                break;
+            }
+            case 11:
+            {
+                cin.clear();
+                system("cls");
+                packet_edit_pipe(pipeline);
                 break;
             }
             case 0:

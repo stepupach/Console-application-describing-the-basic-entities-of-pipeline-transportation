@@ -10,6 +10,7 @@ class stations
     double performance;
 
     stations();
+    static void edit_station(stations& cs);
 
     friend std::ostream& operator << (std::ostream& out, const stations& cs);
     friend std::istream& operator >> (std::istream& in, stations& cs);

@@ -7,7 +7,12 @@ int pipes::maxId_pipe = 0;
 
 pipes::pipes()
 {
-	id_pipe = ++maxId_pipe;
+    id_p = ++maxId_pipe;
+}
+
+void pipes::edit_pipe(pipes& pipe) {
+    cout << "\n Pipe condition: " << pipe.condition << ".\n Cnahge it (1- yes; 0 - no)?\n ";
+    if (check_number(0, 1) == 1) pipe.condition = (!pipe.condition);
 }
 
 istream& operator >> (istream& in, pipes& pipe)
@@ -26,7 +31,8 @@ istream& operator >> (istream& in, pipes& pipe)
 ostream& operator << (ostream& out, const pipes& pipe)
 {
     cout << "\n***Pipe***------+----------------+-----------------------------------------+\n";
-    cout << "id:" << pipe.id_pipe;
+    cout << "max id:" << pipe.maxId_pipe;
+    cout << "\nid:" << pipe.id_p;
     cout << "\nname:" << pipe.name_pipe;
     cout << "\n|    Length     |    Diameter    | Condition: 0 - Under repair,   1 - OK   |\n";
     printf("|    %.2f     |     %.2f     |              %d                          |\n", pipe.length, pipe.diameter, pipe.condition);
