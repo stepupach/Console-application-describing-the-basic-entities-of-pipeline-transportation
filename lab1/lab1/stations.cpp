@@ -1,9 +1,15 @@
 #include "stations.h"
 #include "utils.h"
+#include <fstream>
 
 using namespace std;
 
 int stations::maxId_cs = 0;
+
+int stations::get_id() const
+{
+    return id_cs;
+}
 
 stations::stations()
 {
@@ -38,4 +44,24 @@ ostream& operator << (ostream& out, const stations& cs)
     cout << "\n|    All workshops    | Active workshops  | Performance % |\n";
     printf("|         %d         |       %d         |     %.2f    |\n", cs.all_workshops, cs.active_workshops, cs.performance);
     return out;
+}
+
+ofstream& operator << (ofstream& out, const stations& cs)
+{
+    out << cs.get_id() << endl
+        << cs.name << endl
+        << cs.all_workshops << endl
+        << cs.active_workshops << endl
+        << cs.performance << endl;
+    return out;
+}
+
+ifstream& operator >> (ifstream& in, stations& cs)
+{
+    in >> cs.id_cs;
+    in >> cs.name;
+    in >> cs.all_workshops;
+    in >> cs.active_workshops;
+    in >> cs.performance;
+    return in;
 }

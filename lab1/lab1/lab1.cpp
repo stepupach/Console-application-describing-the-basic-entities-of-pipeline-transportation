@@ -9,13 +9,10 @@
 
 using namespace std;
 
-int id_p = 1;
-int id_cs = 1;
-
 pipes& select_pipe(unordered_map<int, pipes>& pipe)
 {
     cout << "Enter pipe id: ";
-    int id = check_number<uint64_t>(1, pipe.size());
+    int id = check_number<uint64_t>(1, pipes::maxId_pipe);
     if (pipe.count(id) == 0)
         cout << "Error! No pipe with this id\n";
     else
@@ -25,7 +22,7 @@ pipes& select_pipe(unordered_map<int, pipes>& pipe)
 stations& select_cs(unordered_map<int, stations>& cs)
 {
     cout << "Enter compressor station id: ";
-    int id = check_number<uint64_t>(1, cs.size());
+    int id = check_number<uint64_t>(1, stations::maxId_cs);
     if (cs.count(id) == 0)
         cout << "Error! No CS with this id\n";
     else
@@ -35,7 +32,7 @@ stations& select_cs(unordered_map<int, stations>& cs)
 void delete_pipe(unordered_map<int, pipes>& pipe)
 {
     cout << "Enter pipe id: ";
-    int id = check_number<uint64_t>(1, pipe.size());
+    int id = check_number<uint64_t>(1, pipes::maxId_pipe);
     if (pipe.count(id) == 0)
         cout << "Error! No pipe with this id\n";
     else
@@ -45,52 +42,26 @@ void delete_pipe(unordered_map<int, pipes>& pipe)
 void delete_station(unordered_map<int, stations>& cs)
 {
     cout << "Enter compressor station id: ";
-    int id = check_number<uint64_t>(1, cs.size());
+    int id = check_number<uint64_t>(1, stations::maxId_cs);
     if (cs.count(id) == 0)
         cout << "Error! No CS with this id\n";
     else
         cs.erase(id);
 }
 
-void save_pipe(ofstream& fout, const pipes& pipe)
-{
-    string object;
-    object = "pipe";
-    fout << object << endl;
-    fout << pipe.maxId_pipe << endl << pipe.id_p << endl << pipe.name_pipe << endl << pipe.length << endl << pipe.diameter << endl << pipe.condition << endl;
-}
-
-void save_station(ofstream& fout, const stations& cs)
-{
-    string object;
-    object = "compressor station";
-    fout << object << endl;
-    fout << cs.maxId_cs << endl << cs.id_cs << endl << cs.name << endl << cs.all_workshops << endl << cs.active_workshops << endl << cs.performance << endl;
-}
-
-pipes load_pipe(ifstream& fin)
+void load_pipe(ifstream& fin, unordered_map<int, pipes>& pipeline)
 {
     pipes pipe;
-    fin >> pipe.maxId_pipe;
-    fin >> pipe.id_p;
-    fin >> pipe.name_pipe;
-    fin >> pipe.length;
-    fin >> pipe.diameter;
-    fin >> pipe.condition;
-    return pipe;
+    fin >> pipe;
+    pipeline.emplace(pipes::maxId_pipe + 1, pipe);
+
 }
 
-stations load_station(ifstream& fin)
+void load_station(ifstream& fin, unordered_map<int,stations>& cs_sistem)
 {
     stations cs;
-    fin >> cs.maxId_cs;
-    fin >> cs.id_cs;
-    fin.ignore(10000, '\n');
-    getline(fin, cs.name);
-    fin >> cs.all_workshops;
-    fin >> cs.active_workshops;
-    fin >> cs.performance;
-    return cs;
+    fin >> cs;
+    cs_sistem.emplace(stations::maxId_cs + 1, cs);
 }
 
 void print_menu() {
@@ -118,7 +89,7 @@ vector<int>find_pipe(const unordered_map<int, pipes>& pipeline, filter_pipe <T> 
     int i = 0;
     for (auto& pipe : pipeline)
     {
-        if (f(pipe.second, p))  res.push_back(pipe.second.id_p);
+        if (f(pipe.second, p))  res.push_back(pipe.first);
         i++;
     }
     if (res.empty())
@@ -145,7 +116,7 @@ vector<int>find_cs(const unordered_map<int, stations>& cs_sistem, filter_cs <T> 
     int i = 0;
     for (auto& cs : cs_sistem)
     {
-        if (f(cs.second, p)) res.push_back(cs.second.id_cs);;
+        if (f(cs.second, p)) res.push_back(cs.first);;
         i++;
     }
     if (res.empty())
@@ -167,7 +138,7 @@ void packet_edit_pipe(unordered_map<int, pipes>& pipeline)
         while (true)
         {
             cout << "Enter pipe id - to edit, 0 - to complete: ";
-            int i = check_number(0, pipes::maxId_pipe);
+            int i = check_number(0, (int)pipeline.size());
             if (i)
             {
                 if (pipeline.count(i) == 0)
@@ -194,14 +165,14 @@ int main()
             {
                 pipes pipe;
                 cin >> pipe;
-                pipeline.insert({ id_p, pipe });
+                pipeline.emplace(pipeline.size() + 1, pipe);
                 break;
             }
             case 2:
             {
                 stations cs;
                 cin >> cs;
-                cs_sistem.insert({ id_cs, cs });
+                cs_sistem.emplace(cs_sistem.size() + 1, cs);
                 break;
             }
             case 3:
@@ -210,20 +181,32 @@ int main()
                 system("cls");
                 if ((pipeline.size() != 0) && (cs_sistem.size() == 0))
                 {
-                    for (auto& pipe : pipeline)
-                        cout << pipe.second << endl;
+                    for (const auto& [id_p, pipe] : pipeline)
+                    {
+                        cout << id_p;
+                        cout << pipe << endl;
+                    }
                 }
                 else if ((pipeline.size() == 0) && (cs_sistem.size() != 0))
                 {
-                    for (auto& cs : cs_sistem)
-                        cout << cs.second << endl;
+                    for (const auto& [id_cs, cs] : cs_sistem)
+                    {
+                        cout << id_cs;
+                        cout << cs << endl;
+                    }
                 }
                 else if ((pipeline.size() != 0) && (cs_sistem.size() != 0))
                 {
-                    for (auto& pipe : pipeline)
-                        cout << pipe.second << endl;
-                    for (auto& cs : cs_sistem)
-                        cout << cs.second << endl;
+                    for (const auto& [id_p, pipe] : pipeline)
+                    {
+                        cout << id_p;
+                        cout << pipe << endl;
+                    }
+                    for (const auto& [id_cs, cs] : cs_sistem)
+                    {
+                        cout << id_cs;
+                        cout << cs << endl;
+                    }
                 }
                 else cout << "Input objects" << endl;
                 break;
@@ -257,10 +240,13 @@ int main()
                 fout.open(fname + ".txt", ios::out);
                 if (fout.is_open())
                 {
-                    for (auto& pipe : pipeline)
-                        save_pipe(fout, pipe.second);
-                    for (auto& cs : cs_sistem)
-                        save_station(fout, cs.second);
+                    fout << pipeline.size() << endl;
+                    for (const auto& [id_p, p] : pipeline)
+                        fout << pipe;
+                    fout << cs_sistem.size() << endl;
+                    for (const auto& [id_cs, cs] : cs_sistem)
+                        fout << cs;
+                    fout.close();
                     break;
                 }
                 else cout << "Error opening file!\n";
@@ -270,7 +256,6 @@ int main()
             {
                 cin.clear();
                 system("cls");
-                string object;
                 ifstream fin;
                 string fname;
                 cout << "Enter file's name: ";
@@ -278,24 +263,22 @@ int main()
                 fin.open(fname + ".txt", ios::in);
                 if (fin.is_open())
                 {
-                    while (!fin.eof())
+                    int i;
+                    fin >> i;
+                    while (i != 0)
                     {
-                        getline(fin, object);
-                        if (object == "pipe")
-                        {
-                            pipeline.insert({ id_p, load_pipe(fin) });
-                            id_p++;
-                        }
-                        if (object == "compressor station")
-                        {
-                            cs_sistem.insert({ id_cs, load_station(fin) });
-                            id_cs++;
-                        }
+                        load_pipe(fin, pipeline);
+                        --i;
                     }
-                    break;
+                    int j;
+                    fin >> j;
+                    while (j != 0)
+                    {
+                        load_station(fin, cs_sistem);
+                        --j;
+                    }
                 }
-                else
-                    cout << "File didn't open..." << endl;
+                fin.close();
                 break;
             }
             case 8:
