@@ -1,11 +1,17 @@
 #include "pipes.h"
 #include "utils.h"
+#include <fstream>
 
 using namespace std;
 
 int pipes::maxId_pipe = 0;
 
-pipes::pipes()
+int pipes::get_id() const
+{
+    return id_p;
+}
+
+void pipes::set_id()
 {
     id_p = ++maxId_pipe;
 }
@@ -17,6 +23,7 @@ void pipes::edit_pipe(pipes& pipe) {
 
 istream& operator >> (istream& in, pipes& pipe)
 {
+    pipe.set_id();
     cout << " Create a new pipe! Fill in the gaps\n Name: ";
     getline(in, pipe.name_pipe);
     cout << " Length (500-20000 m): ";
@@ -31,10 +38,28 @@ istream& operator >> (istream& in, pipes& pipe)
 ostream& operator << (ostream& out, const pipes& pipe)
 {
     cout << "\n***Pipe***------+----------------+-----------------------------------------+\n";
-    cout << "max id:" << pipe.maxId_pipe;
-    cout << "\nid:" << pipe.id_p;
+    cout << "id:" << pipe.id_p;
     cout << "\nname:" << pipe.name_pipe;
     cout << "\n|    Length     |    Diameter    | Condition: 0 - Under repair,   1 - OK   |\n";
     printf("|    %.2f     |     %.2f     |              %d                          |\n", pipe.length, pipe.diameter, pipe.condition);
     return out;
+}
+
+ofstream& operator << (ofstream& out, const pipes& pipe)
+{
+    out << pipe.get_id() << endl
+        << pipe.name_pipe << endl
+        << pipe.length << endl
+        << pipe.diameter << endl
+        << pipe.condition << endl;
+    return out;
+}
+ifstream& operator >> (ifstream& in, pipes& pipe)
+{
+    in >> pipe.id_p;
+    in >> pipe.name_pipe;
+    in >> pipe.length;
+    in >> pipe.diameter;
+    in >> pipe.condition;
+    return in;
 }

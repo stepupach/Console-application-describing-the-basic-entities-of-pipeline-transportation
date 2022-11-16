@@ -12,7 +12,7 @@ public:
     double performance;
 
     int get_id() const;
-    stations();
+    void set_id();
     static void edit_station(stations& cs);
 
     friend std::ostream& operator << (std::ostream& out, const stations& cs);

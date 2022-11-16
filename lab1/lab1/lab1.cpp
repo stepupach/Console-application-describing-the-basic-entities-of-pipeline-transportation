@@ -1,6 +1,7 @@
 ﻿#include <iostream>
 #include <fstream>
 #include <string>
+#include <cstdlib>
 #include <vector>
 #include <unordered_map>
 #include "pipes.h"
@@ -29,46 +30,63 @@ stations& select_cs(unordered_map<int, stations>& cs)
         return cs[id];
 }
 
-void delete_pipe(unordered_map<int, pipes>& pipe)
-{
-    cout << "Enter pipe id: ";
-    int id = check_number<uint64_t>(1, pipes::maxId_pipe);
-    if (pipe.count(id) == 0)
-        cout << "Error! No pipe with this id\n";
-    else
-        pipe.erase(id);
-}
-
-void delete_station(unordered_map<int, stations>& cs)
-{
-    cout << "Enter compressor station id: ";
-    int id = check_number<uint64_t>(1, stations::maxId_cs);
-    if (cs.count(id) == 0)
-        cout << "Error! No CS with this id\n";
-    else
-        cs.erase(id);
-}
-
-void load_pipe(ifstream& fin, unordered_map<int, pipes>& pipeline)
+void load (ifstream& fin, unordered_map<int, pipes>& pipeline, unordered_map<int, stations>& cs_sistem)
 {
     pipes pipe;
-    fin >> pipe;
-    pipeline.emplace(pipes::maxId_pipe + 1, pipe);
-
-}
-
-void load_station(ifstream& fin, unordered_map<int,stations>& cs_sistem)
-{
     stations cs;
-    fin >> cs;
-    cs_sistem.emplace(stations::maxId_cs + 1, cs);
+    int i = 0;
+    int kol_p;
+    fin >> kol_p;
+    for (int k = 1; k <= kol_p; k++)
+    {
+        fin >> pipe;
+        for (auto& [id_p, pipe] : pipeline)
+        {
+            if (pipe.get_id() == id_p)
+            {
+                i++;
+            }
+        }
+        if (i == 0)
+        {
+            pipe.maxId_pipe++;
+            pipeline.emplace(pipe.get_id(), pipe);
+        }
+        else
+        {
+            i = 0;
+        }
+    }
+    int j = 0;
+    int kol_cs;
+    fin >> kol_cs;
+    for (int k = 1; k <= kol_cs; k++)
+    {
+        fin >> cs;
+        for (auto& [id_cs, cs] : cs_sistem)
+        {
+            if (cs.get_id() == id_cs)
+            {
+                j++;
+            }
+        }
+        if (j == 0)
+        {
+            cs.maxId_cs++;
+            cs_sistem.emplace(cs.get_id(), cs);
+        }
+        else
+        {
+            j = 0;
+        }
+    }
 }
 
 void print_menu() {
     system("cls"); 
     cout << "   Welcome! This is the menu. Select an action:\n";
     cout << "1. Add pipe\n2. Add compressor station\n3. View all objects\n4. Edit pipe\n5. Edit compressor station" << endl
-         << "6. Save\n7. Download\n8. Delete pipe\n9. Delete station\n10. Find object\n11. Packet edit pipe\n0. Exit\n->";
+         << "6. Save\n7. Download\n8. Delete pipe or pipes\n9. Delete station\n10. Find object\n11. Packet edit pipe\n0. Exit\n->";
 }
 
 template<typename T>
@@ -154,6 +172,83 @@ void packet_edit_pipe(unordered_map<int, pipes>& pipeline)
     }
 }
 
+void delete_pipe(unordered_map<int, pipes>& pipe)
+{
+    cout << "Delete: 1 - one pipe; 2 - pipes with <condition>: ";
+    switch (check_number(1, 2))
+    {
+    case 1:
+    {
+        cout << "Enter pipe id: ";
+        int id = check_number<uint64_t>(1, pipe.size());
+        if (pipe.count(id) == 0)
+            cout << "Error! No pipe with this id\n";
+        pipe.erase(id);
+        break;
+    }
+    case 2:
+    {
+        cout << "Delete pipes condition (1 - pipe is working ; 0 - pipe under repair):  " << endl;
+        bool condition = check_number(0, 1);
+        vector <int> vectID = find_pipe(pipe, check_condition, condition);
+        for (auto& id_p : vectID)
+            cout << id_p << pipe[id_p] << endl;
+        if (vectID.empty())
+        {
+            break;
+        }
+        else
+        {
+            cout << "Delete 1 - all of this pipes / 2 - some pipes: ";
+            if (check_number(1, 2) == 1)
+            {
+                for (auto& id_p : vectID)
+                    pipe.erase(id_p);
+            }
+            else
+            {
+                while (true)
+                {
+                    int i = 0;
+                    int id;
+                    cout << "Enter pipe's id to delete or 0 to complete: ";
+                    cin >> id;
+                    if (id)
+                    {
+                        for (auto& id_p : vectID)
+                        {
+                            if (id == id_p)
+                            {
+                                i++;
+                            }
+                        }
+                        if (i == 0)
+                        {
+                            cout << "Error! No pipe with this condition and this id";
+                        }
+                        else
+                        {
+                            pipe.erase(id);
+                        }
+                    } else break;
+                } 
+            }
+        }
+        break;
+    }
+    }
+}
+
+void delete_station(unordered_map<int, stations>& cs)
+{
+    cout << "Enter compressor station id: ";
+    int id = check_number<uint64_t>(1, stations::maxId_cs);
+    if (cs.count(id) == 0)
+        cout << "Error! No CS with this id\n";
+    else
+        cs.erase(id);
+}
+
 int main()
 {
     unordered_map <int, pipes> pipeline = {};
@@ -165,14 +260,14 @@ int main()
             {
                 pipes pipe;
                 cin >> pipe;
-                pipeline.emplace(pipeline.size() + 1, pipe);
+                pipeline.emplace(pipe.maxId_pipe, pipe);
                 break;
             }
             case 2:
             {
                 stations cs;
                 cin >> cs;
-                cs_sistem.emplace(cs_sistem.size() + 1, cs);
+                cs_sistem.emplace(cs.maxId_cs, cs);
                 break;
             }
             case 3:
@@ -183,7 +278,6 @@ int main()
                 {
                     for (const auto& [id_p, pipe] : pipeline)
                     {
-                        cout << id_p;
                         cout << pipe << endl;
                     }
                 }
@@ -191,7 +285,6 @@ int main()
                 {
                     for (const auto& [id_cs, cs] : cs_sistem)
                     {
-                        cout << id_cs;
                         cout << cs << endl;
                     }
                 }
@@ -199,12 +292,10 @@ int main()
                 {
                     for (const auto& [id_p, pipe] : pipeline)
                     {
-                        cout << id_p;
                         cout << pipe << endl;
                     }
                     for (const auto& [id_cs, cs] : cs_sistem)
                     {
-                        cout << id_cs;
                         cout << cs << endl;
                     }
                 }
@@ -241,11 +332,15 @@ int main()
                 if (fout.is_open())
                 {
                     fout << pipeline.size() << endl;
-                    for (const auto& [id_p, p] : pipeline)
+                    for (const auto& [id_p, pipe] : pipeline)
+                    {
                         fout << pipe;
+                    }
                     fout << cs_sistem.size() << endl;
                     for (const auto& [id_cs, cs] : cs_sistem)
+                    {
                         fout << cs;
+                    }
                     fout.close();
                     break;
                 }
@@ -263,19 +358,10 @@ int main()
                 fin.open(fname + ".txt", ios::in);
                 if (fin.is_open())
                 {
-                    int i;
-                    fin >> i;
-                    while (i != 0)
+                    while (!fin.eof())
                     {
-                        load_pipe(fin, pipeline);
-                        --i;
-                    }
-                    int j;
-                    fin >> j;
-                    while (j != 0)
-                    {
-                        load_station(fin, cs_sistem);
-                        --j;
+                        load(fin, pipeline, cs_sistem);
+                        fin.close();
                     }
                 }
                 fin.close();

@@ -15,7 +15,7 @@ public:
     std::string name_pipe;
 
     int get_id() const;
-    pipes();
+    void set_id();
     static void edit_pipe(pipes& pipe);
 
     friend std::ostream& operator << (std::ostream& out, const pipes& pipe);

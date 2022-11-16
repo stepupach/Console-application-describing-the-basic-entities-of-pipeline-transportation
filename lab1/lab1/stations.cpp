@@ -11,7 +11,7 @@ int stations::get_id() const
     return id_cs;
 }
 
-stations::stations()
+void stations::set_id()
 {
 	id_cs = ++maxId_cs;
 }
@@ -24,6 +24,7 @@ void stations::edit_station(stations& cs) {
 
 istream& operator >> (istream& in, stations& cs)
 {
+    cs.set_id();
     cout << " Create a new CS! Fill in the gaps\n Name: ";
     getline(in, cs.name);
     cout << " Number of workshops (1-100): ";
@@ -38,7 +39,6 @@ istream& operator >> (istream& in, stations& cs)
 ostream& operator << (ostream& out, const stations& cs)
 {
     cout << "\n***Station***----+---------------------+------------------+\n";
-    cout << "max id: " << cs.maxId_cs;
     cout << "\nid:" << cs.id_cs;
     cout << "\nname:" << cs.name;
     cout << "\n|    All workshops    | Active workshops  | Performance % |\n";
