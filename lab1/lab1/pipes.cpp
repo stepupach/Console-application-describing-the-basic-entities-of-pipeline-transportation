@@ -16,9 +16,9 @@ void pipes::set_id()
     id_p = ++maxId_pipe;
 }
 
-void pipes::edit_pipe(pipes& pipe) {
-    cout << "\n Pipe condition: " << pipe.condition << ".\n Cnahge it (1- yes; 0 - no)?\n ";
-    if (check_number(0, 1) == 1) pipe.condition = (!pipe.condition);
+void pipes::edit_pipe() {
+    cout << "\n Pipe condition: " << condition << ".\n Cnahge it (1- yes; 0 - no)?\n ";
+    if (check_number(0, 1) == 1) condition = (!condition);
 }
 
 istream& operator >> (istream& in, pipes& pipe)
@@ -57,7 +57,8 @@ ofstream& operator << (ofstream& out, const pipes& pipe)
 ifstream& operator >> (ifstream& in, pipes& pipe)
 {
     in >> pipe.id_p;
-    in >> pipe.name_pipe;
+    in.ignore(10000, '\n');
+    getline(in, pipe.name_pipe);
     in >> pipe.length;
     in >> pipe.diameter;
     in >> pipe.condition;

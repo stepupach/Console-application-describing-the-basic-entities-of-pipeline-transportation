@@ -7,7 +7,8 @@ using namespace std;
 
 class pipes
 {
-    int id_p{};
+    int id_p;
+
 public:
     static int maxId_pipe;
     double length, diameter;
@@ -16,7 +17,7 @@ public:
 
     int get_id() const;
     void set_id();
-    static void edit_pipe(pipes& pipe);
+    void edit_pipe();
 
     friend std::ostream& operator << (std::ostream& out, const pipes& pipe);
     friend std::istream& operator >> (std::istream& in, pipes& pipe);

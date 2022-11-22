@@ -38,7 +38,7 @@ istream& operator >> (istream& in, stations& cs)
 
 ostream& operator << (ostream& out, const stations& cs)
 {
-    cout << "\n***Station***----+---------------------+------------------+\n";
+    cout << "\n***Station***----+---------------------+------------------+";
     cout << "\nid:" << cs.id_cs;
     cout << "\nname:" << cs.name;
     cout << "\n|    All workshops    | Active workshops  | Performance % |\n";
@@ -59,7 +59,8 @@ ofstream& operator << (ofstream& out, const stations& cs)
 ifstream& operator >> (ifstream& in, stations& cs)
 {
     in >> cs.id_cs;
-    in >> cs.name;
+    in.ignore(10000, '\n');
+    getline(in, cs.name);
     in >> cs.all_workshops;
     in >> cs.active_workshops;
     in >> cs.performance;

@@ -30,63 +30,35 @@ stations& select_cs(unordered_map<int, stations>& cs)
         return cs[id];
 }
 
-void load (ifstream& fin, unordered_map<int, pipes>& pipeline, unordered_map<int, stations>& cs_sistem)
+void print_menu() {
+    system("cls");
+    cout << "   Welcome! This is the menu. Select an action:\n";
+    cout << "1. Add pipe\n2. Add compressor station\n3. View all objects\n4. Edit pipe\n5. Edit compressor station" << endl
+        << "6. Save\n7. Download\n8. Delete pipe or pipes\n9. Delete station\n10. Find object\n11. Packet edit pipe\n0. Exit\n->";
+}
+
+void load(ifstream& fin, unordered_map<int, pipes>& pipeline, unordered_map<int, stations>& cs_sistem)
 {
     pipes pipe;
     stations cs;
-    int i = 0;
-    int kol_p;
-    fin >> kol_p;
-    for (int k = 1; k <= kol_p; k++)
+
+    int kolvo_p;
+    fin >> kolvo_p;
+    for (int k = 1; k <= kolvo_p; k++)
     {
         fin >> pipe;
-        for (auto& [id_p, pipe] : pipeline)
-        {
-            if (pipe.get_id() == id_p)
-            {
-                i++;
-            }
-        }
-        if (i == 0)
-        {
-            pipe.maxId_pipe++;
-            pipeline.emplace(pipe.get_id(), pipe);
-        }
-        else
-        {
-            i = 0;
-        }
+        pipe.maxId_pipe = pipe.get_id();
+        pipeline.emplace(pipe.get_id(), pipe);
     }
-    int j = 0;
-    int kol_cs;
-    fin >> kol_cs;
-    for (int k = 1; k <= kol_cs; k++)
+
+    int kolvo_cs;
+    fin >> kolvo_cs;
+    for (int k = 1; k <= kolvo_cs; k++)
     {
         fin >> cs;
-        for (auto& [id_cs, cs] : cs_sistem)
-        {
-            if (cs.get_id() == id_cs)
-            {
-                j++;
-            }
-        }
-        if (j == 0)
-        {
-            cs.maxId_cs++;
-            cs_sistem.emplace(cs.get_id(), cs);
-        }
-        else
-        {
-            j = 0;
-        }
+        cs.maxId_cs = cs.get_id();
+        cs_sistem.emplace(cs.get_id(), cs);   
     }
-}
-
-void print_menu() {
-    system("cls"); 
-    cout << "   Welcome! This is the menu. Select an action:\n";
-    cout << "1. Add pipe\n2. Add compressor station\n3. View all objects\n4. Edit pipe\n5. Edit compressor station" << endl
-         << "6. Save\n7. Download\n8. Delete pipe or pipes\n9. Delete station\n10. Find object\n11. Packet edit pipe\n0. Exit\n->";
 }
 
 template<typename T>
@@ -123,7 +95,8 @@ using filter_cs = bool(*)(const stations& cs, T p);
     }
     bool check_nowork(const stations& cs, double p)
     {
-        double nowork = ((double)cs.all_workshops - (double)cs.active_workshops) / cs.all_workshops * 100;
+        //double nowork = ((double)cs.all_workshops - (double)cs.active_workshops) / cs.all_workshops * 100;
+        double nowork = 100 - cs.performance;
         return nowork >= p;
     }
 
@@ -144,31 +117,40 @@ vector<int>find_cs(const unordered_map<int, stations>& cs_sistem, filter_cs <T> 
 
 void packet_edit_pipe(unordered_map<int, pipes>& pipeline)
 {
-    cout << "Edit 1 - all pipes, 2 - some pipes: ";
+    cout << "Edit [1] - all pipes / [2] - some pipes: ";
     if (check_number(1, 2) == 1)
     {
-        for (auto& pipe : pipeline)
-            pipes::edit_pipe(pipe.second);
+        cout << "All pipes [1] - are working; [2] - under repair: ";
+        if (check_number(1, 2) == 1)
+        {
+            for (auto& p : pipeline)
+                p.second.condition = 1;
+        }
+        else
+        {
+            for (auto& p : pipeline)
+                p.second.condition = 0;
+        }
     }
     else
     {
-        vector <int> vectID;
+     vector <int> vectID;
         while (true)
         {
-            cout << "Enter pipe id - to edit, 0 - to complete: ";
-            int i = check_number(0, (int)pipeline.size());
+            cout << "Enter pipe's id to edit or 0 to complete: ";
+            int i = check_number<uint64_t>(0, pipes::maxId_pipe);
             if (i)
             {
                 if (pipeline.count(i) == 0)
-                    cout << "Error! No pipe with this id\n";
+                    cout << "Error! There is no pipe with this id\n";
                 else
                     vectID.push_back(i);
             }
             else
                 break;
         }
-        for (int i : vectID)
-            pipeline[i].condition = !pipeline[i].condition;
+     for (int i : vectID)
+        pipeline[i].condition = !pipeline[i].condition;
     }
 }
 
@@ -211,7 +193,7 @@ void delete_pipe(unordered_map<int, pipes>& pipe)
                 {
                     int i = 0;
                     int id;
-                    cout << "Enter pipe's id to delete or 0 to complete: ";
+                    cout << "\nEnter pipe's id to delete or 0 to complete: ";
                     cin >> id;
                     if (id)
                     {
@@ -224,7 +206,7 @@ void delete_pipe(unordered_map<int, pipes>& pipe)
                         }
                         if (i == 0)
                         {
-                            cout << "Error! No pipe with this condition and this id";
+                            cout << "\nError! No pipe with this condition and this id";
                         }
                         else
                         {
@@ -307,7 +289,7 @@ int main()
                 cin.clear();
                     if (pipeline.size() > 0)
                     {
-                        pipes::edit_pipe(select_pipe(pipeline));
+                        select_pipe(pipeline).edit_pipe();
                     }
                     else cout << "Input pipe to edit! " << endl;
                 break;
@@ -353,18 +335,14 @@ int main()
                 system("cls");
                 ifstream fin;
                 string fname;
-                cout << "Enter file's name: ";
+                cout << "Enter file's name: \n";
                 getline(cin, fname);
                 fin.open(fname + ".txt", ios::in);
                 if (fin.is_open())
                 {
-                    while (!fin.eof())
-                    {
                         load(fin, pipeline, cs_sistem);
                         fin.close();
-                    }
                 }
-                fin.close();
                 break;
             }
             case 8:
