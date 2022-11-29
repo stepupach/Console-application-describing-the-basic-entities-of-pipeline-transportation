@@ -13,6 +13,8 @@ public:
     static int maxId_pipe;
     double length, diameter;
     bool condition;
+    int cs_id_in;
+    int cs_id_out;
     std::string name_pipe;
 
     int get_id() const;

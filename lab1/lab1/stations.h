@@ -10,6 +10,8 @@ public:
     std::string name;
     int all_workshops, active_workshops;
     double performance;
+    int ishod = 0;
+    int zahod = 0;
 
     int get_id() const;
     void set_id();

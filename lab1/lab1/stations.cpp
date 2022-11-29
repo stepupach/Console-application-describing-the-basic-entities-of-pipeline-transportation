@@ -17,9 +17,9 @@ void stations::set_id()
 }
 
 void stations::edit_station(stations& cs) {
-    cout << "Station has " << cs.active_workshops << " active workshops. New amount active workshops:\n";
-    cs.active_workshops = check_number(0, cs.all_workshops);
-    cs.performance = (double)cs.active_workshops / (double)cs.all_workshops * 100;
+        cout << "Station has " << cs.active_workshops << " active workshops. New amount active workshops:\n";
+        cs.active_workshops = check_number(0, cs.all_workshops);
+        cs.performance = (double)cs.active_workshops / (double)cs.all_workshops * 100;
 }
 
 istream& operator >> (istream& in, stations& cs)
@@ -33,6 +33,8 @@ istream& operator >> (istream& in, stations& cs)
     cs.active_workshops = check_number(0, cs.all_workshops);
     cs.performance = (double)cs.active_workshops / (double)cs.all_workshops * 100;
     cout << " Performance %: " << cs.performance << endl;
+    cs.ishod = 0;
+    cs.zahod = 0;
     return in;
 }
 
@@ -43,6 +45,8 @@ ostream& operator << (ostream& out, const stations& cs)
     cout << "\nname:" << cs.name;
     cout << "\n|    All workshops    | Active workshops  | Performance % |\n";
     printf("|         %d         |       %d         |     %.2f    |\n", cs.all_workshops, cs.active_workshops, cs.performance);
+    cout << "\nCS degree of OUT: " << cs.ishod;
+    cout << "\nCS degree of IN: " << cs.zahod;
     return out;
 }
 
@@ -52,7 +56,9 @@ ofstream& operator << (ofstream& out, const stations& cs)
         << cs.name << endl
         << cs.all_workshops << endl
         << cs.active_workshops << endl
-        << cs.performance << endl;
+        << cs.performance << endl
+        << cs.ishod << endl
+        << cs.zahod << endl;
     return out;
 }
 
@@ -64,5 +70,7 @@ ifstream& operator >> (ifstream& in, stations& cs)
     in >> cs.all_workshops;
     in >> cs.active_workshops;
     in >> cs.performance;
+    in >> cs.ishod;
+    in >> cs.zahod;
     return in;
 }

@@ -15,7 +15,9 @@ pipes& select_pipe(unordered_map<int, pipes>& pipe)
     cout << "Enter pipe id: ";
     int id = check_number<uint64_t>(1, pipes::maxId_pipe);
     if (pipe.count(id) == 0)
+    {
         cout << "Error! No pipe with this id\n";
+    }
     else
         return pipe[id];
 }
@@ -25,7 +27,9 @@ stations& select_cs(unordered_map<int, stations>& cs)
     cout << "Enter compressor station id: ";
     int id = check_number<uint64_t>(1, stations::maxId_cs);
     if (cs.count(id) == 0)
+    {
         cout << "Error! No CS with this id\n";
+    }
     else
         return cs[id];
 }
@@ -34,7 +38,7 @@ void print_menu() {
     system("cls");
     cout << "   Welcome! This is the menu. Select an action:\n";
     cout << "1. Add pipe\n2. Add compressor station\n3. View all objects\n4. Edit pipe\n5. Edit compressor station" << endl
-        << "6. Save\n7. Download\n8. Delete pipe or pipes\n9. Delete station\n10. Find object\n11. Packet edit pipe\n0. Exit\n->";
+        << "6. Save\n7. Download\n8. Delete pipe or pipes\n9. Delete station\n10. Find object\n11. Packet edit pipe\n12. CS-pipes system\n0. Exit\n->";
 }
 
 void load(ifstream& fin, unordered_map<int, pipes>& pipeline, unordered_map<int, stations>& cs_sistem)
@@ -69,7 +73,7 @@ using filter_pipe = bool(*)(const pipes& pipe, T p);
     }
     bool check_nameP(const pipes& pipe, string p)
     {
-        return pipe.name_pipe == p;
+        return pipe.name_pipe.contains(p);
     }
 
 template<typename T>
@@ -89,13 +93,12 @@ vector<int>find_pipe(const unordered_map<int, pipes>& pipeline, filter_pipe <T> 
 
 template<typename T>
 using filter_cs = bool(*)(const stations& cs, T p);
-    bool check_nameCS(const stations& cs, string p)
+bool check_nameCS(const stations& cs, string p)
     {
-        return cs.name == p;
+    return cs.name.contains(p);
     }
     bool check_nowork(const stations& cs, double p)
     {
-        //double nowork = ((double)cs.all_workshops - (double)cs.active_workshops) / cs.all_workshops * 100;
         double nowork = 100 - cs.performance;
         return nowork >= p;
     }
@@ -144,7 +147,24 @@ void packet_edit_pipe(unordered_map<int, pipes>& pipeline)
                 if (pipeline.count(i) == 0)
                     cout << "Error! There is no pipe with this id\n";
                 else
-                    vectID.push_back(i);
+                {
+                    int k = 0;
+                    for (auto& id_pipe : vectID)
+                    {
+                        if (i == id_pipe)
+                        {
+                            k++;
+                        }
+                    }
+                    if (k == 0)
+                    {
+                        vectID.push_back(i);
+                    }
+                    else
+                    {
+                        cout << "Error! You have already edit this pipe\n ";
+                    }
+                }
             }
             else
                 break;
@@ -163,9 +183,10 @@ void delete_pipe(unordered_map<int, pipes>& pipe)
     {
         cout << "Enter pipe id: ";
         int id = check_number<uint64_t>(1, pipe.size());
-        if (pipe.count(id) == 0)
-            cout << "Error! No pipe with this id\n";
-        pipe.erase(id);
+        if (pipe.count(id) == 0) cout << "Error! No pipe with this id\n";
+        else if (pipe[id].cs_id_in != 0)
+            cout << "Error! Pipe is working!";
+        else pipe.erase(id);
         break;
     }
     case 2:
@@ -227,8 +248,152 @@ void delete_station(unordered_map<int, stations>& cs)
     int id = check_number<uint64_t>(1, stations::maxId_cs);
     if (cs.count(id) == 0)
         cout << "Error! No CS with this id\n";
+    else if (cs[id].ishod != 0 || cs[id].zahod != 0)
+        cout << "Error! CS is working!";
     else
         cs.erase(id);
+}
+
+void connecting(unordered_map<int, pipes>& pipeline, unordered_map<int, stations>& cs_sistem)
+{
+    if ((pipeline.size() > 0) && (cs_sistem.size() > 0))
+    {
+        int id_pipe_connect = checking(pipeline, "Enter pipe's id to connect: ", "Error! Try again", 1, pipes::maxId_pipe, 0);
+        if (pipeline[id_pipe_connect].cs_id_in == 0 && pipeline[id_pipe_connect].cs_id_out == 0)
+        {
+            int id_out = checking(cs_sistem, "Enter CS id you want to pipe OUT: ", "Error! Try again", 1, stations::maxId_cs, 0);
+            int id_in = checking(cs_sistem, "Enter CS id you want to pipe IN: ", "Error! Try again", 1, stations::maxId_cs, id_out);
+            pipeline[id_pipe_connect].cs_id_in = id_in;
+            pipeline[id_pipe_connect].cs_id_out = id_out;
+            cs_sistem[id_in].zahod += 1;
+            cs_sistem[id_out].ishod += 1;
+        }
+        else
+        {
+            cout << "This pipe already connected!";
+        }
+    }
+    else
+    {
+        cout << "There are not pipes and CS to create connection";
+    }
+}
+
+void disconnecting(unordered_map<int, pipes>& pipeline, unordered_map<int, stations>& cs_sistem)
+{
+    if (pipeline.size() > 0)
+    {
+        int IDpipeDisconnect = checking(pipeline, "Enter pipe's id to disconnect: ", "ERROR! Try again", 1, pipes::maxId_pipe, 0);
+        if (pipeline[IDpipeDisconnect].cs_id_in == 0)
+        {
+            cout << "Pipe isn't connected\n" << endl;
+        }
+        else
+        {
+            pipeline[IDpipeDisconnect].cs_id_in = 0;
+            pipeline[IDpipeDisconnect].cs_id_out = 0;
+            cs_sistem[pipeline[IDpipeDisconnect].cs_id_in].zahod -= 1;
+            cs_sistem[pipeline[IDpipeDisconnect].cs_id_out].ishod -= 1;
+        }
+    }
+    else
+        cout << "No pipe";
+}
+
+void print_system(unordered_map<int, pipes>& pipeline)
+{
+    for (auto& p : pipeline)
+    {
+        if (p.second.cs_id_in > 0 && p.second.cs_id_out > 0)
+        {
+            cout << "\nPipe's id: " << p.first << endl;
+            cout << "Pipe is connected" << endl;
+            cout << "CS's id OUT: " << p.second.cs_id_out << endl;
+            cout << "CS's id IN: " << p.second.cs_id_in << endl;
+        }
+        else
+        {
+            cout << "\nPipe's ID: " << p.first << endl;
+            cout << "Pipe isn't connected" << endl;
+        }
+    }
+}
+
+void sort(unordered_map<int, pipes> pipeline, unordered_map<int, stations> cs_sistem, vector<int>& tops, vector<int>& edges, vector <int>& result)
+{
+    vector <int> x_tops;         
+    vector <int> x_edges;    
+    int cycles = 0, delete_tops = 0;
+    x_tops.clear();
+    bool flag;
+    for (auto& cs : tops)
+    {
+        flag = false;
+        x_edges.clear();
+        if (cs_sistem[cs].zahod == 0 && cs_sistem[cs].ishod != 0)
+        {
+            for (auto& pipe : edges)
+            {
+                if (pipeline[pipe].cs_id_out == cs)
+                {
+                    x_edges.push_back(pipe);
+                }
+            }
+            flag = true;
+            for (const auto& pipe : x_edges)
+            {
+                cs_sistem[pipeline[pipe].cs_id_in].zahod -= 1;
+                cs_sistem[pipeline[pipe].cs_id_out].ishod -= 1;
+                pipeline[pipe].cs_id_in = 0;
+                pipeline[pipe].cs_id_out = 0;
+                edges.erase(find(edges.begin(), edges.end(), pipe));
+            }
+            delete_tops += 1;
+            x_tops.push_back(cs);
+        }
+    }
+    for (const auto& cs : x_tops)
+    {
+        result.push_back(cs);
+        tops.erase(find(tops.begin(), tops.end(), cs));
+    }
+    if (delete_tops == 0 || cycles == size(tops) || tops.empty())
+    {
+        return;
+    }
+    sort(pipeline, cs_sistem, tops, edges, result);
+}
+
+void topsort(unordered_map<int, pipes> pipeline, unordered_map<int, stations> cs_sistem)
+{
+    vector <int> result;
+    vector <int> tops;          
+    vector <int> edges;         
+    for (auto& cs : cs_sistem)
+    {
+        if (cs.second.ishod != 0 || cs.second.zahod != 0)
+            tops.push_back(cs.first);
+    }
+    for (auto& pipe : pipeline)
+    {
+        if (pipe.second.cs_id_in != 0)
+            edges.push_back(pipe.first);
+    }
+    int check = size(tops);
+    sort(pipeline, cs_sistem, tops, edges, result);
+    if (!result.empty() && check == size(result))
+    {
+        cout << "Graf sorted!" << "Topological Sort: " << endl;
+        for (const auto cs : result)
+        {
+            cout << cs << endl;
+        }
+    }
+    else
+    {
+        cout << "Error!";
+        std::cout << "Error! Don't sort because have cycle";
+    }
 }
 
 int main()
@@ -237,7 +402,7 @@ int main()
     unordered_map <int, stations> cs_sistem = {};
     while (1) {
         print_menu();
-            switch (check_number(0, 11)) {
+            switch (check_number(0, 12)) {
             case 1:
             {
                 pipes pipe;
@@ -287,11 +452,11 @@ int main()
             case 4:
             {
                 cin.clear();
-                    if (pipeline.size() > 0)
-                    {
-                        select_pipe(pipeline).edit_pipe();
-                    }
-                    else cout << "Input pipe to edit! " << endl;
+                if (pipeline.size() > 0)
+                {
+                    select_pipe(pipeline).edit_pipe();
+                }
+                else cout << "Input pipe to edit! " << endl;
                 break;
             }
             case 5:
@@ -382,16 +547,14 @@ int main()
                         string pname;
                         cout << "Search pipes with name:  " << endl;
                         getline(cin, pname);
-                        for (int i : find_pipe(pipeline, check_nameP, pname))
-                            cout << pipeline[i];
+                        for (int i : find_pipe(pipeline, check_nameP, pname)) cout << pipeline[i];
                         break;
                     }
                     case 2:
                     {
                         cout << "Search pipes with condition (0 - Under repair,   1 - OK):  " << endl;
                         bool condition = check_number(0, 1);
-                        for (int i : find_pipe(pipeline, check_condition, condition))
-                            cout << pipeline[i];
+                        for (int i : find_pipe(pipeline, check_condition, condition)) cout << pipeline[i];
                         break;
                     }
                     }
@@ -406,16 +569,14 @@ int main()
                         string csname;
                         cout << "Search CS with name:  " << endl;
                         getline(cin, csname);
-                        for (int i : find_cs(cs_sistem, check_nameCS, csname))
-                            cout << cs_sistem[i];
+                        for (int i : find_cs(cs_sistem, check_nameCS, csname)) cout << cs_sistem[i];
                         break;
                     }
                     case 2:
                     {
                         cout << "Find CS with percent of no working shops (0 - 100 %):  " << endl;
                         double nowork = check_number(0.0, 100.0);
-                        for (int i : find_cs(cs_sistem, check_nowork, nowork))
-                            cout << cs_sistem[i];
+                        for (int i : find_cs(cs_sistem, check_nowork, nowork)) cout << cs_sistem[i];
                         break;
                     }
                     }
@@ -427,6 +588,44 @@ int main()
                 cin.clear();
                 system("cls");
                 packet_edit_pipe(pipeline);
+                break;
+            }
+            case 12:
+            {
+                cin.clear();
+                system("cls");
+                cout << "Choose:\n [1] - connect CS with pipe;\n [2] - show connections;\n [3] - disconnect CS with pipes;\n [4] - topological sort: \n";
+                switch (check_number(1, 4))
+                {
+                case 1:
+                {
+                    cin.clear();
+                    system("cls");
+                    connecting(pipeline, cs_sistem);
+                    break;
+                }
+                case 2:
+                {
+                    cin.clear();
+                    system("cls");
+                    print_system(pipeline);
+                    break;
+                }
+                case 3:
+                {
+                    cin.clear();
+                    system("cls");
+                    disconnecting(pipeline, cs_sistem);
+                    break;
+                }
+                case 4:
+                {
+                    cin.clear();
+                    system("cls");
+                    topsort(pipeline, cs_sistem);
+                    break;
+                }
+                }
                 break;
             }
             case 0:
