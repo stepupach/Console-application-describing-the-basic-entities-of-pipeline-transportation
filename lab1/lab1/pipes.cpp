@@ -17,7 +17,6 @@ void pipes::set_id()
 }
 
 void pipes::edit_pipe() {
-    //cout << "\n Pipe condition: " << condition << ".\n Cnahge it (1- yes; 0 - no)?\n ";
     condition = (!condition);
 }
 
@@ -27,7 +26,7 @@ istream& operator >> (istream& in, pipes& pipe)
     cout << " Create a new pipe! Fill in the gaps\n Name: ";
     getline(in, pipe.name_pipe);
     cout << " Length (1-20000 m): ";
-    pipe.length = check_number(1.0, 20000.0);
+    pipe.length = check_number(1, 20000);
     cout << " Diameter (500, 700, 1400 mm): ";
     pipe.diameter = check_diameter(500, 700, 1400);
     cout << " Condition 0 - Under repair\n           1 - OK\n->";

@@ -270,12 +270,12 @@ void connecting(unordered_map<int, pipes>& pipeline, unordered_map<int, stations
         }
         else
         {
-            cout << "This pipe already connected!";
+            cout << "\nThis pipe already connected!";
         }
     }
     else
     {
-        cout << "There are not pipes and CS to create connection";
+        cout << "\nThere are not pipes and CS to create connection\n";
     }
 }
 
@@ -283,21 +283,21 @@ void disconnecting(unordered_map<int, pipes>& pipeline, unordered_map<int, stati
 {
     if (pipeline.size() > 0)
     {
-        int IDpipeDisconnect = checking(pipeline, "Enter pipe's id to disconnect: ", "ERROR! Try again", 1, pipes::maxId_pipe, 0);
-        if (pipeline[IDpipeDisconnect].cs_id_in == 0)
+        int id_pipe_disconnect = checking(pipeline, "Enter pipe's id to disconnect: ", "ERROR! Try again", 1, pipes::maxId_pipe, 0);
+        if (pipeline[id_pipe_disconnect].cs_id_in == 0)
         {
             cout << "Pipe isn't connected\n" << endl;
         }
         else
         {
-            pipeline[IDpipeDisconnect].cs_id_in = 0;
-            pipeline[IDpipeDisconnect].cs_id_out = 0;
-            cs_sistem[pipeline[IDpipeDisconnect].cs_id_in].zahod -= 1;
-            cs_sistem[pipeline[IDpipeDisconnect].cs_id_out].ishod -= 1;
+            pipeline[id_pipe_disconnect].cs_id_in = 0;
+            pipeline[id_pipe_disconnect].cs_id_out = 0;
+            cs_sistem[pipeline[id_pipe_disconnect].cs_id_in].zahod -= 1;
+            cs_sistem[pipeline[id_pipe_disconnect].cs_id_out].ishod -= 1;
         }
     }
     else
-        cout << "No pipe";
+        cout << "No pipe\n";
 }
 
 void print_system(unordered_map<int, pipes>& pipeline)
@@ -351,6 +351,14 @@ void sort(unordered_map<int, pipes> pipeline, unordered_map<int, stations> cs_si
             delete_tops += 1;
             x_tops.push_back(cs);
         }
+        if (cs_sistem[cs].zahod != 0 && cs_sistem[cs].ishod != 0)
+        {
+            cycles += 1;
+        }
+        if (cs_sistem[cs].zahod == 0 && cs_sistem[cs].ishod == 0 && flag == false)
+        {
+            x_tops.push_back(cs);
+        }
     }
     for (const auto& cs : x_tops)
     {
@@ -364,7 +372,7 @@ void sort(unordered_map<int, pipes> pipeline, unordered_map<int, stations> cs_si
     sort(pipeline, cs_sistem, tops, edges, result);
 }
 
-void topsort(unordered_map<int, pipes> pipeline, unordered_map<int, stations> cs_sistem)
+void print_sort(unordered_map<int, pipes> pipeline, unordered_map<int, stations> cs_sistem)
 {
     vector <int> result;
     vector <int> tops;          
@@ -391,8 +399,7 @@ void topsort(unordered_map<int, pipes> pipeline, unordered_map<int, stations> cs
     }
     else
     {
-        cout << "Error!";
-        std::cout << "Error! Don't sort because have cycle";
+        cout << "Error! Don't sort because have cycle or haven't objects!\n";
     }
 }
 
@@ -622,7 +629,7 @@ int main()
                 {
                     cin.clear();
                     system("cls");
-                    topsort(pipeline, cs_sistem);
+                    print_sort(pipeline, cs_sistem);
                     break;
                 }
                 }

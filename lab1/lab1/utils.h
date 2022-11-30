@@ -14,12 +14,17 @@ type check_number(type min, type max) {
 }
 
 template <typename type>
-type check_diameter(type a, type b, type c) {
-    type i;
-    while ((std::cin >> i).fail() || i != a  || i != b  || i!= c) {
-        std::cin.clear();
-        std::cin.ignore(10000, '\n');
-        std::cout << "Try again. Enter number (" << a << "or" << b << "or" << c "): ";
+type check_diameter(type a, int b, int c) {
+    int i;
+    while ((std::cin >> i).fail() || std::cin.get() != '\n' || i != a || i != b || i != c) {
+        if (i == a || i == b || i == c)
+        {
+            break;
+        }
+        else {
+            std::cin.clear();
+            std::cout << "Try again. Enter number (" << a << " or " << b << " or " << c << "): ";
+        }
     }
     return i;
 }
