@@ -75,6 +75,10 @@ using filter_pipe = bool(*)(const pipes& pipe, T p);
     {
         return pipe.name_pipe.contains(p);
     }
+    bool check_d(const pipes& pipe, int p)
+    {
+        return pipe.diameter == p;
+    }
 
 template<typename T>
 vector<int>find_pipe(const unordered_map<int, pipes>& pipeline, filter_pipe <T> f, T p)
@@ -174,7 +178,7 @@ void packet_edit_pipe(unordered_map<int, pipes>& pipeline)
     }
 }
 
-void delete_pipe(unordered_map<int, pipes>& pipe)
+void delete_pipe(unordered_map<int, pipes>& pipeline)
 {
     cout << "Delete: 1 - one pipe; 2 - pipes with <condition>: ";
     switch (check_number(1, 2))
@@ -182,20 +186,20 @@ void delete_pipe(unordered_map<int, pipes>& pipe)
     case 1:
     {
         cout << "Enter pipe id: ";
-        int id = check_number<uint64_t>(1, pipe.size());
-        if (pipe.count(id) == 0) cout << "Error! No pipe with this id\n";
-        else if (pipe[id].cs_id_in != 0)
+        int id = check_number<uint64_t>(1, pipeline.size());
+        if (pipeline.count(id) == 0) cout << "Error! No pipe with this id\n";
+        else if (pipeline[id].cs_id_in != 0)
             cout << "Error! Pipe is working!";
-        else pipe.erase(id);
+        else pipeline.erase(id);
         break;
     }
     case 2:
     {
         cout << "Delete pipes condition (1 - pipe is working ; 0 - pipe under repair):  " << endl;
         bool condition = check_number(0, 1);
-        vector <int> vectID = find_pipe(pipe, check_condition, condition);
+        vector <int> vectID = find_pipe(pipeline, check_condition, condition);
         for (auto& id_p : vectID)
-            cout << id_p << pipe[id_p] << endl;
+            cout << id_p << pipeline[id_p] << endl;
         if (vectID.empty())
         {
             break;
@@ -206,7 +210,7 @@ void delete_pipe(unordered_map<int, pipes>& pipe)
             if (check_number(1, 2) == 1)
             {
                 for (auto& id_p : vectID)
-                    pipe.erase(id_p);
+                    pipeline.erase(id_p);
             }
             else
             {
@@ -231,7 +235,7 @@ void delete_pipe(unordered_map<int, pipes>& pipe)
                         }
                         else
                         {
-                            pipe.erase(id);
+                            pipeline.erase(id);
                         }
                     } else break;
                 } 
@@ -258,24 +262,32 @@ void connecting(unordered_map<int, pipes>& pipeline, unordered_map<int, stations
 {
     if ((pipeline.size() > 0) && (cs_sistem.size() > 0))
     {
-        int id_pipe_connect = checking(pipeline, "Enter pipe's id to connect: ", "Error! Try again", 1, pipes::maxId_pipe, 0);
-        if (pipeline[id_pipe_connect].cs_id_in == 0 && pipeline[id_pipe_connect].cs_id_out == 0)
+        cout << "Enter pipe's diameter to connect: ";
+        int diam = check_diameter(500, 700, 1400);
+        vector <int> vectID = find_pipe(pipeline, check_d, diam);
+        for (auto& id_p : vectID)
         {
-            int id_out = checking(cs_sistem, "Enter CS id you want to pipe OUT: ", "Error! Try again", 1, stations::maxId_cs, 0);
-            int id_in = checking(cs_sistem, "Enter CS id you want to pipe IN: ", "Error! Try again", 1, stations::maxId_cs, id_out);
-            pipeline[id_pipe_connect].cs_id_in = id_in;
-            pipeline[id_pipe_connect].cs_id_out = id_out;
-            cs_sistem[id_in].zahod += 1;
-            cs_sistem[id_out].ishod += 1;
-        }
-        else
-        {
-            cout << "\nThis pipe already connected!";
+            int id_pipe_connect = id_p;
+            if (pipeline[id_pipe_connect].cs_id_in == 0 && pipeline[id_pipe_connect].cs_id_out == 0)
+            {
+                int id_out = checking(cs_sistem, "Enter CS id you want to pipe OUT: ", "Error! Try again", 1, stations::maxId_cs, 0);
+                int id_in = checking(cs_sistem, "Enter CS id you want to pipe IN: ", "Error! Try again", 1, stations::maxId_cs, id_out);
+                pipeline[id_pipe_connect].cs_id_in = id_in;
+                pipeline[id_pipe_connect].cs_id_out = id_out;
+                cs_sistem[id_in].zahod += 1;
+                cs_sistem[id_out].ishod += 1;
+                break;
+            }
+          //  else
+           // {
+                //cout << "\n There is no free pipe with this diameter. Create a new pipe or free another one.\n";
+                //continue;
+           // }
         }
     }
     else
     {
-        cout << "\nThere are not pipes and CS to create connection\n";
+        cout << "\nThere are not pipes or CS to create connection\n";
     }
 }
 
@@ -307,6 +319,7 @@ void print_system(unordered_map<int, pipes>& pipeline)
         if (p.second.cs_id_in > 0 && p.second.cs_id_out > 0)
         {
             cout << "\nPipe's id: " << p.first << endl;
+            cout << "Pipe's diameter: " << p.second.diameter << endl;
             cout << "Pipe is connected" << endl;
             cout << "CS's id OUT: " << p.second.cs_id_out << endl;
             cout << "CS's id IN: " << p.second.cs_id_in << endl;
@@ -369,7 +382,7 @@ void sort(unordered_map<int, pipes> pipeline, unordered_map<int, stations> cs_si
     {
         return;
     }
-    sort(pipeline, cs_sistem, tops, edges, result);
+    //sort(pipeline, cs_sistem, tops, edges, result);
 }
 
 void print_sort(unordered_map<int, pipes> pipeline, unordered_map<int, stations> cs_sistem)
@@ -391,7 +404,7 @@ void print_sort(unordered_map<int, pipes> pipeline, unordered_map<int, stations>
     sort(pipeline, cs_sistem, tops, edges, result);
     if (!result.empty() && check == size(result))
     {
-        cout << "Graf sorted!" << "Topological Sort: " << endl;
+        cout << "Graf sort!" << endl << "Topological Sort: " << endl;
         for (const auto cs : result)
         {
             cout << cs << endl;
