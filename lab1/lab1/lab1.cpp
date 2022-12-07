@@ -265,8 +265,10 @@ void connecting(unordered_map<int, pipes>& pipeline, unordered_map<int, stations
         cout << "Enter pipe's diameter to connect: ";
         int diam = check_diameter(500, 700, 1400);
         vector <int> vectID = find_pipe(pipeline, check_d, diam);
+        bool flag = true;
         for (auto& id_p : vectID)
         {
+            //bool flag = true;
             int id_pipe_connect = id_p;
             if (pipeline[id_pipe_connect].cs_id_in == 0 && pipeline[id_pipe_connect].cs_id_out == 0)
             {
@@ -276,13 +278,17 @@ void connecting(unordered_map<int, pipes>& pipeline, unordered_map<int, stations
                 pipeline[id_pipe_connect].cs_id_out = id_out;
                 cs_sistem[id_in].zahod += 1;
                 cs_sistem[id_out].ishod += 1;
+                flag = false;
                 break;
             }
-          //  else
-           // {
-                //cout << "\n There is no free pipe with this diameter. Create a new pipe or free another one.\n";
-                //continue;
-           // }
+            /*else if (flag == false)
+            {
+                cout << "\n There is no free pipe with this diameter. Create a new pipe or free another one.\n";
+             }*/
+        } 
+        if (flag == true)
+        {
+            cout << "There is no free pipe with this diameter. Create a new pipe or free another one.\n";
         }
     }
     else
@@ -382,7 +388,7 @@ void sort(unordered_map<int, pipes> pipeline, unordered_map<int, stations> cs_si
     {
         return;
     }
-    //sort(pipeline, cs_sistem, tops, edges, result);
+    sort(pipeline, cs_sistem, tops, edges, result);
 }
 
 void print_sort(unordered_map<int, pipes> pipeline, unordered_map<int, stations> cs_sistem)
@@ -400,7 +406,7 @@ void print_sort(unordered_map<int, pipes> pipeline, unordered_map<int, stations>
         if (pipe.second.cs_id_in != 0)
             edges.push_back(pipe.first);
     }
-    int check = size(tops);
+    int check = size(edges);
     sort(pipeline, cs_sistem, tops, edges, result);
     if (!result.empty() && check == size(result))
     {
@@ -420,6 +426,7 @@ int main()
 {
     unordered_map <int, pipes> pipeline = {};
     unordered_map <int, stations> cs_sistem = {};
+    int v=8;
     while (1) {
         print_menu();
             switch (check_number(0, 12)) {
